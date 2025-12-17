@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Social Support Services Directory</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
@@ -23,7 +27,7 @@
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
         .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); }
@@ -45,6 +49,7 @@
         </header>
 
         <main class="flex-grow container mx-auto px-4 py-8 md:py-12">
+            
             <section class="bg-white p-6 rounded-xl card-shadow mb-8 sticky top-0 z-10">
                 <h2 class="text-2xl font-bold mb-6 text-gray-900">Find Support Services</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -57,12 +62,14 @@
                         <label for="filter-geography" class="block text-sm font-medium text-gray-700 mb-2">Geography Covered</label>
                         <select id="filter-geography" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary input-focus transition-all bg-white">
                             <option value="">All Geographies</option>
+                            <option disabled>Loading options...</option>
                         </select>
                     </div>
                     <div>
                         <label for="filter-support-type" class="block text-sm font-medium text-gray-700 mb-2">Type of Support</label>
                         <select id="filter-support-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary input-focus transition-all bg-white">
                             <option value="">All Support Types</option>
+                            <option disabled>Loading options...</option>
                         </select>
                     </div>
                 </div>
@@ -74,7 +81,7 @@
 
             <div id="loading-indicator" class="text-center py-12">
                 <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-                <p class="mt-4 text-gray-600">Loading directory data...</p>
+                <p class="mt-4 text-gray-600">Loading directory data from Google Sheets...</p>
             </div>
 
             <section id="services-listing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
@@ -82,23 +89,28 @@
 
             <div id="no-results" class="hidden text-center py-12">
                 <p class="text-xl text-gray-600">No services found matching your criteria.</p>
-                <button onclick="clearAllFiltersAndRender()" class="mt-4 gradient-bg text-white px-6 py-2 rounded-lg font-semibold shadow-md">Clear Filters</button>
+                <button onclick="clearAllFiltersAndRender()" class="mt-4 gradient-bg text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all">
+                    Clear Filters
+                </button>
             </div>
         </main>
 
         <footer class="bg-gray-800 text-white py-6">
             <div class="container mx-auto px-4 text-center text-gray-400">
-                <p>&copy; 2023 Social Support Directory. All rights reserved.</p>
+                <p>&copy; 2023 Social Support Directory. Powered by Google Sheets.</p>
             </div>
         </footer>
     </div>
 
     <script>
         // ==========================================
-        // CONFIGURATION: PASTE YOUR GOOGLE SHEET CSV LINK HERE
+        // 1. CONFIGURATION
         // ==========================================
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTi-trr3ayiUahuwKY_osY25XgbT2rSpe62FKmmFSLvKFqdnvLtMzu_iuswSjQAQQ1t9hPA-w9ukPBp/pub?output=csv";
-        
+        // Paste your Google Sheet URL here (Edit link, Share link, or Publish link)
+        // Ensure your sheet is shared as "Anyone with the link -> Viewer"
+        const SHEET_URL = "PASTE_YOUR_GOOGLE_SHEET_URL_HERE"; 
+        // ==========================================
+
         let allServices = [];
 
         // DOM Elements
@@ -111,14 +123,30 @@
         const clearFiltersBtn = document.getElementById('clear-filters');
         const noResultsMessage = document.getElementById('no-results');
 
-        // 1. Fetch and Parse Data
+        // Helper: Convert standard Google Sheet URL to the CORS-friendly Visualization API URL
+        function getSafeApiUrl(url) {
+            // Regex to extract the Spreadsheet ID (the long random string)
+            const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!idMatch || !idMatch[1]) {
+                console.error("Could not find Spreadsheet ID in URL");
+                return url; // Return original if parsing fails
+            }
+            const id = idMatch[1];
+            // Construct the Visualization API URL (defaults to first sheet)
+            return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv`;
+        }
+
+        // --- STEP 1: INITIALIZE & FETCH DATA ---
         function init() {
-            if(SHEET_URL === "YOUR_GOOGLE_SHEET_PUBLISHED_CSV_LINK_HERE") {
-                alert("Please edit the HTML file and add your Google Sheet CSV link in the script tag.");
+            if(SHEET_URL === "PASTE_YOUR_GOOGLE_SHEET_URL_HERE") {
+                alert("Please open the HTML file and paste your Google Sheet URL in the script tag.");
                 return;
             }
 
-            Papa.parse(SHEET_URL, {
+            const safeUrl = getSafeApiUrl(SHEET_URL);
+            console.log("Fetching data from:", safeUrl);
+
+            Papa.parse(safeUrl, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
@@ -127,50 +155,60 @@
                 },
                 error: function(err) {
                     console.error("Error fetching data:", err);
-                    loadingIndicator.innerHTML = "<p class='text-red-500'>Error loading data. Please check console.</p>";
+                    loadingIndicator.innerHTML = `
+                        <p class='text-red-500 font-bold'>Error loading data.</p>
+                        <p class='text-sm text-gray-600'>1. Ensure Sheet is shared as 'Anyone with Link' -> 'Viewer'.</p>
+                        <p class='text-sm text-gray-600'>2. Check your internet connection.</p>
+                    `;
                 }
             });
         }
 
-        // 2. Process Data into usable format
+        // --- STEP 2: PROCESS DATA ---
         function processData(data) {
-            // Transform the CSV data (where supportType is a string) into our array format
             allServices = data.map((row, index) => {
-                // Handle cases where supportType might be empty
+                
+                // Handle Support Types: Split by comma, trim whitespace
                 let types = [];
                 if (row.supportType) {
-                    // Split by comma and remove extra whitespace
-                    types = row.supportType.split(',').map(s => s.trim());
+                    types = row.supportType.split(',').map(s => s.trim()).filter(s => s !== "");
+                }
+
+                // Handle Geography: Split by comma, trim whitespace
+                let geos = [];
+                if (row.geography) {
+                    geos = row.geography.split(',').map(g => g.trim()).filter(g => g !== "");
                 }
                 
                 return {
-                    id: row.id || index, // Fallback to index if ID is missing
+                    id: row.id || index,
                     name: row.name || "Unnamed Organization",
-                    geography: row.geography || "Unknown",
-                    supportType: types,
+                    geography: geos, // Array of strings
+                    supportType: types, // Array of strings
                     criteria: row.criteria || ""
                 };
             });
 
-            // Populate UI
             populateFilterOptions();
             renderServices(allServices);
             
-            // Hide loader, show grid
+            // UI Update: Hide loader, show results
             loadingIndicator.classList.add('hidden');
             servicesListing.classList.remove('hidden');
         }
 
+        // --- STEP 3: POPULATE DROPDOWNS ---
         function populateFilterOptions() {
             const uniqueGeographies = new Set();
             const uniqueSupportTypes = new Set();
 
             allServices.forEach(service => {
-                if(service.geography) uniqueGeographies.add(service.geography);
-                if(service.supportType) service.supportType.forEach(type => uniqueSupportTypes.add(type));
+                service.geography.forEach(geo => uniqueGeographies.add(geo));
+                service.supportType.forEach(type => uniqueSupportTypes.add(type));
             });
 
-            // Populate Geography
+            // Populate Geography Dropdown
+            filterGeographySelect.innerHTML = '<option value="">All Geographies</option>';
             Array.from(uniqueGeographies).sort().forEach(geo => {
                 const option = document.createElement('option');
                 option.value = geo;
@@ -178,7 +216,8 @@
                 filterGeographySelect.appendChild(option);
             });
 
-            // Populate Support Type
+            // Populate Support Type Dropdown
+            filterSupportTypeSelect.innerHTML = '<option value="">All Support Types</option>';
             Array.from(uniqueSupportTypes).sort().forEach(type => {
                 const option = document.createElement('option');
                 option.value = type;
@@ -187,6 +226,7 @@
             });
         }
 
+        // --- STEP 4: RENDER CARDS ---
         function renderServices(filteredServices) {
             servicesListing.innerHTML = '';
             
@@ -197,23 +237,26 @@
                 noResultsMessage.classList.add('hidden');
                 servicesListing.classList.remove('hidden');
                 
-                // Limit rendering to 50 items initially to prevent browser lag if list is huge
-                // (In a real production app, you would implement pagination)
+                // Limit display to 100 items to prevent browser lag on large datasets
                 const displayLimit = filteredServices.length > 100 ? 100 : filteredServices.length;
 
                 for(let i = 0; i < displayLimit; i++) {
                     const service = filteredServices[i];
+                    
                     const card = document.createElement('div');
                     card.className = 'bg-white p-6 rounded-xl card-shadow border border-gray-200 group hover:group-hover:shadow-lg transition-all transform hover:-translate-y-1';
                     
-                    // Create badges HTML
+                    // Create Support Type Badges
                     const badgesHtml = service.supportType.map(type => 
                         `<span class="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">${type}</span>`
                     ).join('');
 
+                    // Join Geography array back to string for display
+                    const geoDisplay = service.geography.join(', ');
+
                     card.innerHTML = `
                         <h3 class="font-bold text-xl text-gray-900 mb-3">${service.name}</h3>
-                        <p class="text-sm text-gray-600 mb-2"><strong>Geography:</strong> ${service.geography}</p>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Geography:</strong> ${geoDisplay}</p>
                         <div class="flex flex-wrap gap-2 mb-4">${badgesHtml}</div>
                         <p class="text-gray-700 text-sm"><strong>Criteria:</strong> ${service.criteria}</p>
                     `;
@@ -222,15 +265,22 @@
             }
         }
 
+        // --- STEP 5: FILTER LOGIC ---
         function applyFilters() {
             const nameFilter = filterNameInput.value.toLowerCase().trim();
             const geographyFilter = filterGeographySelect.value;
             const supportTypeFilter = filterSupportTypeSelect.value;
 
             const filtered = allServices.filter(service => {
+                // Name match
                 const matchesName = nameFilter === "" || (service.name && service.name.toLowerCase().includes(nameFilter));
-                const matchesGeography = geographyFilter === "" || service.geography === geographyFilter;
+                
+                // Geography match: Check if service.geography array INCLUDES the selected value
+                const matchesGeography = geographyFilter === "" || service.geography.includes(geographyFilter);
+                
+                // Type match: Check if service.supportType array INCLUDES the selected value
                 const matchesSupportType = supportTypeFilter === "" || service.supportType.includes(supportTypeFilter);
+                
                 return matchesName && matchesGeography && matchesSupportType;
             });
 
@@ -248,7 +298,7 @@
             clearFilters();
         }
 
-        // Initialize
+        // --- EVENTS ---
         document.addEventListener('DOMContentLoaded', init);
         
         applyFiltersBtn.addEventListener('click', applyFilters);
