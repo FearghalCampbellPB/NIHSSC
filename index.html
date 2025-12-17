@@ -1,260 +1,321 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Social Support Directory</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          animation: {
-            'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Support Services Directory</title>
+    <!-- Tailwind CSS CDN - The JIT compiler will dynamically inject styles into a <style> tag, fulfilling the requirement for styles to be "inline" -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind configuration for extended colors/fonts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1', // Indigo 500
+                        secondary: '#8b5cf6', // Violet 500
+                        accent: '#a855f7', // Purple 500
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
+                    }
+                }
+            }
         }
-      }
-    }
-  </script>
-  <style>
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  </style>
+    </script>
+    <!-- Google Fonts - Inter for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS rules, adhering to the 'inline within <style> tags' requirement */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Gradient background for header and primary buttons */
+        .gradient-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+        }
+        /* Custom card shadow for depth */
+        .card-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Focus styles for inputs and selects */
+        .input-focus:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.5);
+        }
+        /* Smooth transitions for interactive elements */
+        .transition-all {
+            transition-property: all;
+            transition-duration: 300ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Specific group hover effects */
+        .group:hover .group-hover\:translate-x-1 {
+            transform: translateX(0.25rem);
+        }
+        .group:hover .group-hover\:shadow-lg {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen antialiased">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24">
-    <!-- Header -->
-    <div class="text-center mb-16 lg:mb-24">
-      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6 lg:mb-8 drop-shadow-2xl leading-tight">
-        Social Support Directory
-      </h1>
-      <p class="text-xl sm:text-2xl lg:text-3xl text-gray-700 max-w-3xl mx-auto leading-relaxed font-medium">
-        Find essential support services from trusted organisations across the UK. Filter by type, geography, and more to get help when you need it.
-      </p>
-    </div>
+<body class="bg-gray-50 text-gray-800">
 
-    <!-- Filters -->
-    <div class="bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl p-6 lg:p-8 mb-8 lg:mb-12 border border-white/50">
-      <div class="flex flex-col lg:flex-row gap-4 lg:gap-6 items-stretch lg:items-center">
-        <input 
-          id="search" 
-          type="text" 
-          placeholder="Search by name, criteria, or description..." 
-          class="flex-1 px-6 py-4 lg:py-5 text-lg border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100/50 focus:outline-none transition-all duration-300 shadow-sm bg-white/50 hover:shadow-md"
-        >
-        <select id="type" class="w-full lg:w-auto px-6 py-4 lg:py-5 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100/50 focus:outline-none transition-all duration-300 shadow-sm bg-white/50 hover:shadow-md text-lg">
-          <option value="any">Any Type</option>
-        </select>
-        <select id="geo" class="w-full lg:w-auto px-6 py-4 lg:py-5 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100/50 focus:outline-none transition-all duration-300 shadow-sm bg-white/50 hover:shadow-md text-lg">
-          <option value="any">Any Geography</option>
-        </select>
-        <button 
-          onclick="clearFilters()" 
-          class="px-8 py-4 lg:py-5 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap text-lg flex-shrink-0"
-        >
-          Clear Filters
-        </button>
-      </div>
-    </div>
-
-    <!-- Count -->
-    <div id="count" class="text-center text-2xl font-bold text-gray-700 mb-8 lg:mb-12 bg-white/60 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-md border border-gray-200/50">
-      Loading services...
-    </div>
-
-    <!-- Services Grid -->
-    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 lg:gap-8">
-      <!-- Cards will be inserted here -->
-    </div>
-  </div>
-
-  <script>
-    // Data generation
-    const types = [
-      'Cancer Support', 'Homelessness Support', 'Mental Health', 'Domestic Abuse', 
-      'Food Banks', 'Addiction Support', 'Disability Services', 'Elderly Care', 
-      'Youth Services', 'Financial Advice'
-    ];
-    const geos = [
-      'UK-wide', 'England', 'Scotland', 'Wales', 'Northern Ireland', 
-      'London', 'Manchester', 'Birmingham', 'Glasgow', 'Cardiff'
-    ];
-    const criteriaOptions = [
-      'Open to all individuals in need.',
-      'Referral from GP or social worker required.',
-      'Available to those aged 18 and over.',
-      'For low-income households only.',
-      'Specific to cancer diagnosis.',
-      'LGBTQ+ friendly services.',
-      'Women only.',
-      'Support for families with children.',
-      'Veterans and ex-service personnel.',
-      'No waiting list, walk-ins welcome.',
-      'Telephone support 24/7.',
-      'Online chat available.',
-      'In-person appointments by booking.',
-      'Emergency accommodation provided.',
-      'Counselling sessions free of charge.',
-      'BAME community focused.',
-      'Young adults 16-25.',
-      'Carers support.',
-      'Bereavement counselling.',
-      'Debt management assistance.'
-    ];
-    const prefixes = [
-      'Hope', 'Care', 'Aid', 'Relief', 'Beacon', 'Harbour', 'Anchor', 'Unity', 
-      'Empower', 'Thrive', 'Restore', 'Nurture', 'Shield', 'Bridge', 'Haven', 
-      'Solace', 'Vanguard', 'Pinnacle', 'Summit', 'Oasis'
-    ];
-    const suffixes = [
-      'Support', 'Services', 'Foundation', 'Charity', 'Trust', 'Alliance', 
-      'Hub', 'Centre', 'Group', 'Society', 'Network', 'Initiative', 
-      'Project', 'Collective', 'Union'
-    ];
-
-    function generateServices(count = 1800) {
-      const services = [];
-      for (let i = 0; i < count; i++) {
-        const type = types[Math.floor(Math.random() * types.length)];
-        const geo = geos[Math.floor(Math.random() * geos.length)];
-        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-        const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-        const typeWord = type.split(' ')[0];
-        const name = `${prefix} ${typeWord} ${suffix}`;
-        const criteria = criteriaOptions[Math.floor(Math.random() * criteriaOptions.length)];
-        services.push({
-          name,
-          geography: geo,
-          type,
-          criteria
-        });
-      }
-      // Sort by name
-      services.sort((a, b) => a.name.localeCompare(b.name));
-      return services;
-    }
-
-    let allServices = [];
-    let filteredServices = [];
-
-    // DOM elements
-    const searchInput = document.getElementById('search');
-    const typeSelect = document.getElementById('type');
-    const geoSelect = document.getElementById('geo');
-    const countEl = document.getElementById('count');
-    const cardsGrid = document.getElementById('cards-grid');
-
-    function populateFilters() {
-      typeSelect.innerHTML = '<option value="any">Any Type</option>' + 
-        types.map(t => `<option value="${t}">${t}</option>`).join('');
-      geoSelect.innerHTML = '<option value="any">Any Geography</option>' + 
-        geos.map(g => `<option value="${g}">${g}</option>`).join('');
-    }
-
-    function createCard(service) {
-      const div = document.createElement('div');
-      div.className = 'group bg-white rounded-3xl shadow-xl hover:shadow-2xl p-6 lg:p-8 transition-all duration-500 ease-out opacity-0 translate-y-4 hover:-translate-y-2 cursor-pointer overflow-hidden border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 backdrop-blur-sm';
-      div.innerHTML = `
-        <h3 class="text-xl lg:text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-all duration-300 line-clamp-2">${service.name}</h3>
-        <div class="flex flex-wrap gap-2 mb-6">
-          <span class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-semibold rounded-full shadow-lg shadow-blue-500/25">${service.type}</span>
-          <span class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-full shadow-lg shadow-emerald-500/25">${service.geography}</span>
-        </div>
-        <p class="text-gray-700 leading-relaxed text-sm lg:text-base line-clamp-3 group-hover:line-clamp-none">${service.criteria}</p>
-      `;
-      return div;
-    }
-
-    function render(services) {
-      countEl.textContent = services.length === 0 
-        ? 'No services match your criteria.' 
-        : `Showing ${services.length} of ${allServices.length} services`;
-
-      cardsGrid.innerHTML = '';
-
-      if (services.length === 0) {
-        cardsGrid.innerHTML = `
-          <div class="col-span-full flex flex-col items-center justify-center py-24 lg:py-32 px-8 text-center bg-gradient-to-b from-slate-50 to-white/80 rounded-3xl shadow-2xl border border-gray-200/50 backdrop-blur-md">
-            <div class="w-24 h-24 lg:w-28 lg:h-28 bg-gradient-to-br from-amber-100 via-orange-100 to-yellow-100 rounded-3xl flex items-center justify-center mb-8 shadow-2xl border-4 border-amber-200/50">
-              <svg class="w-12 h-12 lg:w-14 lg:h-14 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header Section -->
+        <header class="gradient-bg text-white py-6 shadow-lg">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-2 leading-tight">Social Support Services Directory</h1>
+                <p class="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">Connecting individuals with vital social support organizations across the nation.</p>
             </div>
-            <h3 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">No services found</h3>
-            <p class="text-lg lg:text-xl text-gray-600 max-w-lg mx-auto mb-8 leading-relaxed">Try broadening your search, changing filters, or clearing all filters to see more options.</p>
-            <button onclick="clearFilters()" class="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 text-lg px-10">
-              Clear All Filters
-            </button>
-          </div>
-        `;
-        return;
-      }
+        </header>
 
-      services.forEach((service, index) => {
-        const card = createCard(service);
-        cardsGrid.appendChild(card);
-        // Staggered animation
-        setTimeout(() => {
-          card.classList.remove('opacity-0', 'translate-y-4');
-        }, index * 40);
-      });
-    }
+        <!-- Main Content Area -->
+        <main class="flex-grow container mx-auto px-4 py-8 md:py-12">
+            <!-- Filter Section -->
+            <section class="bg-white p-6 rounded-xl card-shadow mb-8 sticky top-0 z-10">
+                <h2 class="text-2xl font-bold mb-6 text-gray-900">Find Support Services</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="filter-name" class="block text-sm font-medium text-gray-700 mb-2">Organization Name</label>
+                        <input type="text" id="filter-name" placeholder="e.g., Cancer Support"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary input-focus transition-all">
+                    </div>
+                    <div>
+                        <label for="filter-geography" class="block text-sm font-medium text-gray-700 mb-2">Geography Covered</label>
+                        <select id="filter-geography"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary input-focus transition-all bg-white appearance-none pr-8">
+                            <option value="">All Geographies</option>
+                            <!-- Options will be populated dynamically by JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filter-support-type" class="block text-sm font-medium text-gray-700 mb-2">Type of Support</label>
+                        <select id="filter-support-type"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary input-focus transition-all bg-white appearance-none pr-8">
+                            <option value="">All Support Types</option>
+                            <!-- Options will be populated dynamically by JavaScript -->
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-8 flex flex-col sm:flex-row justify-end gap-4">
+                    <button id="apply-filters"
+                            class="gradient-bg text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 w-full sm:w-auto">
+                        Apply Filters
+                    </button>
+                    <button id="clear-filters"
+                            class="px-8 py-3 rounded-lg font-semibold text-lg bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-gray-800 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 w-full sm:w-auto">
+                        Clear Filters
+                    </button>
+                </div>
+            </section>
 
-    function updateFilters() {
-      const query = searchInput.value.toLowerCase().trim();
-      const selectedType = typeSelect.value === 'any' ? '' : typeSelect.value;
-      const selectedGeo = geoSelect.value === 'any' ? '' : geoSelect.value;
+            <!-- Listings Section -->
+            <section id="services-listing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Placeholder cards for initial loading visual -->
+                <div class="bg-white p-6 rounded-xl card-shadow border border-gray-200 animate-pulse">
+                    <h3 class="font-bold text-xl text-gray-900 mb-3 h-6 bg-gray-200 rounded w-3/4"></h3>
+                    <p class="text-sm text-gray-600 mb-2 h-4 bg-gray-200 rounded w-1/2"></p>
+                    <p class="text-sm text-gray-600 mb-4 h-4 bg-gray-200 rounded w-2/3"></p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-medium rounded-full h-6 w-20"></span>
+                        <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-medium rounded-full h-6 w-24"></span>
+                    </div>
+                    <p class="text-gray-700 text-sm h-12 bg-gray-200 rounded"></p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border border-gray-200 animate-pulse">
+                    <h3 class="font-bold text-xl text-gray-900 mb-3 h-6 bg-gray-200 rounded w-3/4"></h3>
+                    <p class="text-sm text-gray-600 mb-2 h-4 bg-gray-200 rounded w-1/2"></p>
+                    <p class="text-sm text-gray-600 mb-4 h-4 bg-gray-200 rounded w-2/3"></p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-medium rounded-full h-6 w-20"></span>
+                        <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-medium rounded-full h-6 w-24"></span>
+                    </div>
+                    <p class="text-gray-700 text-sm h-12 bg-gray-200 rounded"></p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border border-gray-200 animate-pulse hidden lg:block">
+                    <h3 class="font-bold text-xl text-gray-900 mb-3 h-6 bg-gray-200 rounded w-3/4"></h3>
+                    <p class="text-sm text-gray-600 mb-2 h-4 bg-gray-200 rounded w-1/2"></p>
+                    <p class="text-sm text-gray-600 mb-4 h-4 bg-gray-200 rounded w-2/3"></p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-medium rounded-full h-6 w-20"></span>
+                        <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-medium rounded-full h-6 w-24"></span>
+                    </div>
+                    <p class="text-gray-700 text-sm h-12 bg-gray-200 rounded"></p>
+                </div>
+            </section>
+            <div id="no-results" class="hidden text-center py-12">
+                <p class="text-xl text-gray-600">No services found matching your criteria.</p>
+                <button onclick="clearAllFiltersAndRender()" class="mt-4 gradient-bg text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                    Clear Filters
+                </button>
+            </div>
+        </main>
 
-      filteredServices = allServices.filter(service => 
-        (!query || 
-          service.name.toLowerCase().includes(query) || 
-          service.criteria.toLowerCase().includes(query) ||
-          service.type.toLowerCase().includes(query) ||
-          service.geography.toLowerCase().includes(query)) &&
-        (!selectedType || service.type === selectedType) &&
-        (!selectedGeo || service.geography === selectedGeo)
-      );
+        <!-- Footer Section -->
+        <footer class="bg-gray-800 text-white py-6">
+            <div class="container mx-auto px-4 text-center text-gray-400">
+                <p>&copy; 2023 Social Support Directory. All rights reserved.</p>
+                <p class="text-sm mt-2">Designed with modern web principles.</p>
+            </div>
+        </footer>
+    </div>
 
-      render(filteredServices);
-    }
+    <!-- JavaScript for data, filtering, and rendering -->
+    <script>
+        // Dummy data for social support services
+        // This array will be expanded by the generateDummyData function to simulate up to 2000 entries.
+        const baseServices = [
+            { id: 1, name: "Cancer Care National", geography: "National", supportType: ["Emotional Support", "Information & Advice", "Financial Aid"], criteria: "Individuals and families affected by all types of cancer. Helpline available." },
+            { id: 2, name: "London Homeless Shelter", geography: "London", supportType: ["Shelter", "Food & Drink", "Employment Support"], criteria: "Homeless individuals in London aged 18+. Referral preferred but walk-ins accepted." },
+            { id: 3, name: "Youth Minds South East", geography: "Regional (South East)", supportType: ["Counselling", "Peer Support"], criteria: "Young people (13-25) with mental health concerns in specified South East counties." },
+            { id: 4, name: "Disability Connect UK", geography: "National", supportType: ["Information & Advice", "Advocacy", "Community Building"], criteria: "People with disabilities and their carers seeking support and resources." },
+            { id: 5, name: "Elderly Companionship Bristol", geography: "Bristol", supportType: ["Social Activities", "Befriending", "Transport"], criteria: "Elderly residents (65+) in Bristol experiencing loneliness or isolation." },
+            { id: 6, name: "Addiction Recovery Scotland", geography: "Scotland", supportType: ["Addiction Recovery", "Counselling", "Peer Support"], criteria: "Individuals struggling with addiction in Scotland. Confidential self-referral." },
+            { id: 7, name: "Domestic Abuse Helpline", geography: "National", supportType: ["Crisis Intervention", "Emotional Support", "Legal Aid"], criteria: "Anyone experiencing domestic abuse, regardless of gender or background. 24/7 helpline." },
+            { id: 8, name: "Bereavement Support Group Wales", geography: "Wales", supportType: ["Bereavement Support", "Counselling"], criteria: "Adults in Wales grieving the loss of a loved one. Group sessions and one-to-one." },
+            { id: 9, name: "Food Bank Network Manchester", geography: "Manchester", supportType: ["Food & Drink", "Crisis Intervention"], criteria: "Families and individuals in food poverty in Manchester. Voucher required from referral agency." },
+            { id: 10, name: "Veterans Outreach North West", geography: "Regional (North West)", supportType: ["Employment Support", "Housing Support", "Mental Health Support"], criteria: "Veterans and their families residing in the North West. Proof of service required." },
+            { id: 11, name: "LGBTQ+ Youth Support Brighton", geography: "Brighton", supportType: ["Peer Support", "Emotional Support", "Social Activities"], criteria: "LGBTQ+ young people (11-18) in Brighton and Hove seeking a safe space and community." },
+            { id: 12, name: "Carers Respite Services Yorkshire", geography: "Regional (Yorkshire)", supportType: ["Respite Care", "Information & Advice", "Emotional Support"], criteria: "Unpaid carers in Yorkshire needing a break or support navigating their caring role." },
+            { id: 13, name: "Refugee & Asylum Seeker Aid", geography: "National", supportType: ["Legal Aid", "Housing Support", "Language Support"], criteria: "Refugees and asylum seekers across the UK requiring assistance with integration and rights." },
+            { id: 14, name: "Children's Grief Centre Belfast", geography: "Belfast", supportType: ["Bereavement Support", "Counselling"], criteria: "Children and young people (4-18) in Belfast coping with loss due to death or separation." },
+            { id: 15, name: "Community Legal Clinic Glasgow", geography: "Glasgow", supportType: ["Legal Aid", "Information & Advice"], criteria: "Low-income individuals in Glasgow needing free legal advice on specific issues (housing, welfare)." },
+            { id: 16, name: "Environmental Activist Network", geography: "National", supportType: ["Advocacy", "Community Building", "Education"], criteria: "Individuals passionate about environmental issues and looking to get involved." },
+            { id: 17, name: "Stroke Recovery Support", geography: "Regional (Midlands)", supportType: ["Rehabilitation Support", "Peer Support", "Information & Advice"], criteria: "Stroke survivors and their families in the Midlands seeking recovery resources." },
+            { id: 18, name: "Single Parent Support Network", geography: "National", supportType: ["Financial Aid", "Information & Advice", "Peer Support"], criteria: "Single parents seeking advice, community, and financial guidance." },
+            { id: 19, name: "Autism Spectrum Assistance", geography: "National", supportType: ["Information & Advice", "Advocacy", "Parent Support"], criteria: "Individuals on the autism spectrum and their families." },
+            { id: 20, name: "Parkinson's UK Support", geography: "National", supportType: ["Information & Advice", "Exercise Groups", "Emotional Support"], criteria: "People living with Parkinson's and their carers." }
+        ];
 
-    function clearFilters() {
-      searchInput.value = '';
-      typeSelect.value = 'any';
-      geoSelect.value = 'any';
-      updateFilters();
-      searchInput.focus();
-    }
+        // Function to generate additional dummy data to reach ~2000 entries
+        function generateDummyData(targetCount) {
+            const currentServices = [...baseServices];
+            const geographies = ["National", "London", "Regional (South East)", "Regional (North West)", "Scotland", "Wales", "Northern Ireland", "Bristol", "Manchester", "Glasgow", "Brighton", "Regional (Yorkshire)", "Regional (Midlands)", "Cornwall", "Devon", "Kent", "Essex", "Suffolk", "Norfolk", "Cumbria", "Northumberland", "Tyne and Wear", "Durham", "Lincolnshire", "Nottinghamshire", "Derbyshire", "Leicestershire", "Staffordshire", "Warwickshire", "West Midlands", "Cambridgeshire", "Bedfordshire", "Hertfordshire", "Surrey", "Sussex", "Hampshire", "Dorset", "Somerset", "Wiltshire", "Gloucestershire", "Oxfordshire", "Buckinghamshire"];
+            const supportTypes = ["Emotional Support", "Financial Aid", "Information & Advice", "Shelter", "Food & Drink", "Employment Support", "Counselling", "Peer Support", "Legal Aid", "Housing Support", "Disability Support", "Bereavement Support", "Crisis Intervention", "Addiction Recovery", "Social Activities", "Befriending", "Transport", "Advocacy", "Community Building", "Respite Care", "Language Support", "Mental Health Support", "Rehabilitation Support", "Education", "Parent Support", "Exercise Groups", "Youth Services", "Elderly Care", "Health & Wellness", "Environmental", "Animal Welfare", "Arts & Culture"];
 
-    // Debounced search
-    let debounceTimer;
-    function debouncedUpdate() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(updateFilters, 250);
-    }
+            for (let i = currentServices.length + 1; i <= targetCount; i++) {
+                const randomGeo = geographies[Math.floor(Math.random() * geographies.length)];
+                const randomSupportTypes = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => supportTypes[Math.floor(Math.random() * supportTypes.length)]);
+                const uniqueSupportTypes = [...new Set(randomSupportTypes)]; // Ensure unique types
 
-    // Init
-    document.addEventListener('DOMContentLoaded', () => {
-      allServices = generateServices(2000);
-      populateFilters();
-      searchInput.addEventListener('input', debouncedUpdate);
-      typeSelect.addEventListener('change', updateFilters);
-      geoSelect.addEventListener('change', updateFilters);
-      updateFilters();
-    });
+                currentServices.push({
+                    id: i,
+                    name: `Community Support Group ${i} in ${randomGeo}`,
+                    geography: randomGeo,
+                    supportType: uniqueSupportTypes,
+                    criteria: `Providing assistance for local residents in ${randomGeo} facing various life challenges. Contact for eligibility.`,
+                });
+            }
+            return currentServices;
+        }
 
-    // Expose for onclick
-    window.clearFilters = clearFilters;
-  </script>
+        // Generate the full dataset (e.g., 2000 entries)
+        const allServices = generateDummyData(2000);
+
+        // DOM element references
+        const servicesListing = document.getElementById('services-listing');
+        const filterNameInput = document.getElementById('filter-name');
+        const filterGeographySelect = document.getElementById('filter-geography');
+        const filterSupportTypeSelect = document.getElementById('filter-support-type');
+        const applyFiltersBtn = document.getElementById('apply-filters');
+        const clearFiltersBtn = document.getElementById('clear-filters');
+        const noResultsMessage = document.getElementById('no-results');
+
+        // Populates the filter dropdowns with unique options from the data
+        function populateFilterOptions() {
+            const uniqueGeographies = new Set();
+            const uniqueSupportTypes = new Set();
+
+            allServices.forEach(service => {
+                uniqueGeographies.add(service.geography);
+                service.supportType.forEach(type => uniqueSupportTypes.add(type));
+            });
+
+            // Populate Geography dropdown
+            Array.from(uniqueGeographies).sort().forEach(geo => {
+                const option = document.createElement('option');
+                option.value = geo;
+                option.textContent = geo;
+                filterGeographySelect.appendChild(option);
+            });
+
+            // Populate Support Type dropdown
+            Array.from(uniqueSupportTypes).sort().forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                filterSupportTypeSelect.appendChild(option);
+            });
+        }
+
+        // Renders the filtered services to the DOM
+        function renderServices(filteredServices) {
+            servicesListing.innerHTML = ''; // Clear existing listings
+            if (filteredServices.length === 0) {
+                noResultsMessage.classList.remove('hidden');
+            } else {
+                noResultsMessage.classList.add('hidden');
+                filteredServices.forEach(service => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-6 rounded-xl card-shadow border border-gray-200 group hover:group-hover:shadow-lg transition-all transform hover:-translate-y-1';
+                    card.innerHTML = `
+                        <h3 class="font-bold text-xl text-gray-900 mb-3">${service.name}</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Geography:</strong> ${service.geography}</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${service.supportType.map(type => `<span class="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">${type}</span>`).join('')}
+                        </div>
+                        <p class="text-gray-700 text-sm"><strong>Criteria:</strong> ${service.criteria}</p>
+                    `;
+                    servicesListing.appendChild(card);
+                });
+            }
+        }
+
+        // Applies filters based on user input and re-renders the list
+        function applyFilters() {
+            const nameFilter = filterNameInput.value.toLowerCase().trim();
+            const geographyFilter = filterGeographySelect.value;
+            const supportTypeFilter = filterSupportTypeSelect.value;
+
+            const filtered = allServices.filter(service => {
+                const matchesName = nameFilter === "" || service.name.toLowerCase().includes(nameFilter);
+                const matchesGeography = geographyFilter === "" || service.geography === geographyFilter;
+                // Checks if the selected support type is included in the service's supportType array
+                const matchesSupportType = supportTypeFilter === "" || service.supportType.includes(supportTypeFilter);
+
+                return matchesName && matchesGeography && matchesSupportType;
+            });
+
+            renderServices(filtered);
+        }
+
+        // Clears all filter inputs and re-applies filters to show all services
+        function clearFilters() {
+            filterNameInput.value = '';
+            filterGeographySelect.value = '';
+            filterSupportTypeSelect.value = '';
+            applyFilters(); // Re-render with all services
+        }
+
+        // Helper for clearing filters from the "No results" message button
+        function clearAllFiltersAndRender() {
+            clearFilters();
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            populateFilterOptions();
+            applyFilters(); // Initial render of all services on page load
+        });
+
+        // Attach event listeners to filter controls
+        applyFiltersBtn.addEventListener('click', applyFilters);
+        clearFiltersBtn.addEventListener('click', clearFilters);
+        filterNameInput.addEventListener('input', applyFilters); // Live filtering as user types
+        filterGeographySelect.addEventListener('change', applyFilters);
+        filterSupportTypeSelect.addEventListener('change', applyFilters);
+    </script>
 </body>
 </html>
-```
