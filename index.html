@@ -25,71 +25,85 @@
         .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); }
         .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
         
-        /* Custom Scrollbar for the Multi-select dropdown */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
-
-        /* Mobile optimizations */
         input, select, button { touch-action: manipulation; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <header class="gradient-bg text-white py-8 shadow-lg">
+    <header class="gradient-bg text-white py-6 md:py-8 shadow-lg">
         <div class="container mx-auto px-4 text-center">
-            <h1 class="text-3xl md:text-5xl font-extrabold mb-3 leading-tight">Social Support Directory</h1>
-            <p class="text-base md:text-lg opacity-90 max-w-2xl mx-auto font-light">Find vital support services in your local community.</p>
+            <h1 class="text-2xl md:text-5xl font-extrabold mb-2 md:mb-3 leading-tight">Social Support Directory</h1>
+            <p class="text-sm md:text-lg opacity-90 max-w-2xl mx-auto font-light">Find vital support services in your local community.</p>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-6 md:py-10">
+    <main class="flex-grow container mx-auto px-4 py-4 md:py-10">
         
-        <section class="bg-white p-5 md:p-8 rounded-2xl card-shadow mb-8 sticky top-2 z-30 border border-gray-100">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                
-                <div class="relative">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Search</label>
-                    <input type="text" id="filter-name" placeholder="Search name or criteria..." 
-                           class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm">
-                </div>
-
-                <div class="relative group" id="geo-dropdown-container">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Geography (Select Multiple)</label>
-                    
-                    <button id="geo-dropdown-btn" onclick="toggleGeoDropdown()" 
-                            class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
-                        <span id="geo-selected-text" class="truncate">All Geographies</span>
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-
-                    <div id="geo-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2">
-                        <div class="p-2 text-sm text-gray-400">Loading locations...</div>
+        <section class="bg-white rounded-xl card-shadow mb-6 sticky top-2 z-30 border border-gray-100 transition-all duration-300">
+            
+            <div class="flex justify-between items-center p-4 md:p-6 cursor-pointer md:cursor-default" onclick="toggleMobileFilters()">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-indigo-50 rounded-lg text-primary">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-lg">Find Services</h2>
+                        <p class="text-xs text-gray-500 md:hidden" id="filter-status-text">Tap to expand filters</p>
                     </div>
                 </div>
+                
+                <button id="filter-chevron" class="md:hidden transform transition-transform duration-200">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
 
-                <div class="relative">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Support Type</label>
+            <div id="filter-content" class="hidden md:block px-4 pb-4 md:px-6 md:pb-6 border-t md:border-t-0 border-gray-100">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                    
                     <div class="relative">
-                        <select id="filter-support-type" 
-                                class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm appearance-none cursor-pointer">
-                            <option value="">All Support Types</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Search</label>
+                        <input type="text" id="filter-name" placeholder="Search name or criteria..." 
+                               class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm">
+                    </div>
+
+                    <div class="relative group" id="geo-dropdown-container">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Geography (Multiple)</label>
+                        <button id="geo-dropdown-btn" onclick="toggleGeoDropdown(event)" 
+                                class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
+                            <span id="geo-selected-text" class="truncate">All Geographies</span>
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+
+                        <div id="geo-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2">
+                            <div class="p-2 text-sm text-gray-400">Loading locations...</div>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Support Type</label>
+                        <div class="relative">
+                            <select id="filter-support-type" 
+                                    class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm appearance-none cursor-pointer">
+                                <option value="">All Support Types</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="mt-6 flex flex-col md:flex-row justify-end gap-3 md:gap-4">
-                <button onclick="clearFilters()" class="order-2 md:order-1 w-full md:w-auto px-6 h-12 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-gray-300">
-                    Clear Filters
-                </button>
-                <button onclick="applyFilters()" class="order-1 md:order-2 w-full md:w-auto px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">
-                    Show Results
-                </button>
+                <div class="mt-6 flex flex-col md:flex-row justify-end gap-3 md:gap-4">
+                    <button onclick="clearFilters()" class="order-2 md:order-1 w-full md:w-auto px-6 h-12 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+                        Clear Filters
+                    </button>
+                    <button onclick="applyFilters(); collapseMobileFilters();" class="order-1 md:order-2 w-full md:w-auto px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">
+                        Show Results
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -99,7 +113,7 @@
             <div id="debug-log" class="mt-6 mx-auto max-w-lg p-4 bg-red-50 text-red-600 rounded-lg text-left text-xs font-mono hidden border border-red-200"></div>
         </div>
 
-        <section id="services-listing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 hidden"></section>
+        <section id="services-listing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 hidden"></section>
 
         <div id="no-results" class="hidden text-center py-16">
             <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
@@ -127,18 +141,40 @@
         let allServices = [];
         let allGeographies = new Set();
         
-        // Color Palette for Tags
+        // Colors
         const tagColors = [
-            "bg-blue-100 text-blue-800 border-blue-200",
-            "bg-emerald-100 text-emerald-800 border-emerald-200",
-            "bg-violet-100 text-violet-800 border-violet-200",
-            "bg-amber-100 text-amber-800 border-amber-200",
-            "bg-rose-100 text-rose-800 border-rose-200",
-            "bg-cyan-100 text-cyan-800 border-cyan-200",
-            "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
-            "bg-indigo-100 text-indigo-800 border-indigo-200",
+            "bg-blue-100 text-blue-800 border-blue-200", "bg-emerald-100 text-emerald-800 border-emerald-200",
+            "bg-violet-100 text-violet-800 border-violet-200", "bg-amber-100 text-amber-800 border-amber-200",
+            "bg-rose-100 text-rose-800 border-rose-200", "bg-cyan-100 text-cyan-800 border-cyan-200",
+            "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200", "bg-indigo-100 text-indigo-800 border-indigo-200",
         ];
 
+        // --- MOBILE TOGGLE LOGIC ---
+        function toggleMobileFilters() {
+            // Only toggle on mobile screens (using logic similar to Tailwind's 'md' breakpoint)
+            if (window.innerWidth >= 768) return; 
+
+            const content = document.getElementById('filter-content');
+            const chevron = document.getElementById('filter-chevron');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                chevron.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                chevron.classList.remove('rotate-180');
+            }
+        }
+
+        // Collapse filters after clicking "Show Results" on mobile
+        function collapseMobileFilters() {
+            if (window.innerWidth < 768) {
+                document.getElementById('filter-content').classList.add('hidden');
+                document.getElementById('filter-chevron').classList.remove('rotate-180');
+            }
+        }
+
+        // --- UTILS ---
         function getSafeApiUrl(url) {
             const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
             if (!idMatch || !idMatch[1]) return null;
@@ -162,8 +198,7 @@
             for (let i = 0; i < type.length; i++) {
                 hash = type.charCodeAt(i) + ((hash << 5) - hash);
             }
-            const index = Math.abs(hash) % tagColors.length;
-            return tagColors[index];
+            return tagColors[Math.abs(hash) % tagColors.length];
         }
 
         function logError(msg) {
@@ -173,6 +208,7 @@
             el.innerHTML += `<div>• ${msg}</div>`;
         }
 
+        // --- INIT ---
         function init() {
             if(SHEET_URL.includes("PASTE_YOUR")) {
                 alert("Please edit the HTML file and paste your Google Sheet URL.");
@@ -180,72 +216,50 @@
             }
 
             const safeUrl = getSafeApiUrl(SHEET_URL);
-            if (!safeUrl) {
-                logError("Invalid Sheet URL.");
-                return;
-            }
+            if (!safeUrl) { logError("Invalid Sheet URL."); return; }
 
             Papa.parse(safeUrl, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
+                download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
                     if (results.errors.length > 0) logError("CSV Error: " + results.errors[0].message);
-                    try {
-                        processData(results.data);
-                    } catch (e) {
-                        logError("Processing Error: " + e.message);
-                    }
+                    try { processData(results.data); } catch (e) { logError("Processing Error: " + e.message); }
                 },
-                error: function(err) {
-                    logError("Network Error: " + err.message);
-                }
+                error: function(err) { logError("Network Error: " + err.message); }
             });
         }
 
         function processData(data) {
             allServices = data.map((row, index) => {
                 if (Object.keys(row).length === 0) return null;
-                
                 const rawName = getValueByFuzzyKey(row, "name");
                 const rawGeo = getValueByFuzzyKey(row, "geography");
                 const rawType = getValueByFuzzyKey(row, "supportType");
                 
                 if(!rawName && !rawGeo) return null;
-
                 const geos = cleanSplit(rawGeo);
                 geos.forEach(g => allGeographies.add(g));
 
                 return {
-                    id: index,
-                    name: rawName || "Unnamed Org",
-                    geography: geos,
-                    supportType: cleanSplit(rawType),
-                    criteria: getValueByFuzzyKey(row, "criteria") || ""
+                    id: index, name: rawName || "Unnamed Org", geography: geos,
+                    supportType: cleanSplit(rawType), criteria: getValueByFuzzyKey(row, "criteria") || ""
                 };
             }).filter(item => item !== null);
 
             populateFilters();
             renderServices(allServices);
-            
             document.getElementById('loading-indicator').classList.add('hidden');
             document.getElementById('services-listing').classList.remove('hidden');
         }
 
+        // --- FILTERS ---
         function populateFilters() {
-            // Support Type
             const typeSelect = document.getElementById('filter-support-type');
             const uniqueTypes = new Set();
             allServices.forEach(s => s.supportType.forEach(t => uniqueTypes.add(t)));
-            
-            Array.from(uniqueTypes).sort().forEach(t => {
-                typeSelect.add(new Option(t, t));
-            });
+            Array.from(uniqueTypes).sort().forEach(t => typeSelect.add(new Option(t, t)));
 
-            // Geography Checkboxes
             const geoMenu = document.getElementById('geo-dropdown-menu');
             geoMenu.innerHTML = '';
-            
             if(allGeographies.size === 0) {
                 geoMenu.innerHTML = '<div class="p-2 text-gray-400">No locations found</div>';
             } else {
@@ -256,21 +270,21 @@
                         <input type="checkbox" value="${geo}" class="geo-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
                         <span class="ml-2 text-gray-700 text-sm">${geo}</span>
                     `;
-                    // Updated: Triggers filter immediately on change
                     label.querySelector('input').addEventListener('change', () => {
-                        updateGeoLabel();
-                        applyFilters(); // Real-time filtering
+                        updateGeoLabel(); applyFilters();
                     });
                     geoMenu.appendChild(label);
                 });
             }
         }
 
-        function toggleGeoDropdown() {
+        function toggleGeoDropdown(e) {
+            e.stopPropagation(); // Prevent bubbling causing immediate close
             const menu = document.getElementById('geo-dropdown-menu');
             menu.classList.toggle('hidden');
         }
 
+        // Close dropdowns on click outside
         document.addEventListener('click', function(event) {
             const container = document.getElementById('geo-dropdown-container');
             const menu = document.getElementById('geo-dropdown-menu');
@@ -282,39 +296,40 @@
         function updateGeoLabel() {
             const checkboxes = document.querySelectorAll('.geo-checkbox:checked');
             const labelSpan = document.getElementById('geo-selected-text');
-            
             if (checkboxes.length === 0) {
                 labelSpan.textContent = "All Geographies";
-                labelSpan.classList.remove('text-gray-800', 'font-medium');
-                labelSpan.classList.add('text-gray-500');
-            } else if (checkboxes.length === 1) {
-                labelSpan.textContent = checkboxes[0].value;
-                labelSpan.classList.add('text-gray-800', 'font-medium');
-                labelSpan.classList.remove('text-gray-500');
+                labelSpan.className = "truncate text-gray-500";
             } else {
-                labelSpan.textContent = `${checkboxes.length} Locations Selected`;
-                labelSpan.classList.add('text-gray-800', 'font-medium');
-                labelSpan.classList.remove('text-gray-500');
+                labelSpan.textContent = `${checkboxes.length} Selected`;
+                labelSpan.className = "truncate text-gray-800 font-medium";
             }
         }
 
-        // --- UPDATED FILTER LOGIC ---
+        function updateMobileStatus(count) {
+            const statusText = document.getElementById('filter-status-text');
+            if (count > 0) {
+                statusText.innerHTML = `<span class="text-primary font-bold">${count} active filter(s)</span> - Tap to edit`;
+            } else {
+                statusText.innerText = "Tap to expand filters";
+            }
+        }
+
         function applyFilters() {
-            // 1. Get Search Text (Lowercase for insensitive search)
             const searchText = document.getElementById('filter-name').value.toLowerCase().trim();
-            
             const selectedGeos = Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(cb => cb.value);
             const typeInput = document.getElementById('filter-support-type').value;
 
+            // Count active filters for mobile UI
+            let activeFilters = 0;
+            if(searchText) activeFilters++;
+            if(selectedGeos.length > 0) activeFilters++;
+            if(typeInput) activeFilters++;
+            updateMobileStatus(activeFilters);
+
             const filtered = allServices.filter(item => {
-                // 2. Updated Match Logic: Checks Name OR Criteria
-                const matchSearch = !searchText || 
-                                    item.name.toLowerCase().includes(searchText) || 
-                                    item.criteria.toLowerCase().includes(searchText);
-                
+                const matchSearch = !searchText || item.name.toLowerCase().includes(searchText) || item.criteria.toLowerCase().includes(searchText);
                 const matchGeo = selectedGeos.length === 0 || item.geography.some(g => selectedGeos.includes(g));
                 const matchType = !typeInput || item.supportType.includes(typeInput);
-
                 return matchSearch && matchGeo && matchType;
             });
 
@@ -349,30 +364,25 @@
                 }).join('');
 
                 const geoText = item.geography.join(', ');
-
                 const card = `
-                    <div class="bg-white p-6 rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full">
-                        <div class="mb-4">
+                    <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full">
+                        <div class="mb-3">
                             <h3 class="font-bold text-lg text-gray-900 leading-snug mb-1">${item.name}</h3>
-                            <div class="text-sm text-gray-500 flex items-start gap-1">
+                            <div class="text-xs text-gray-500 flex items-start gap-1">
                                 <svg class="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                 <span>${geoText}</span>
                             </div>
                         </div>
-                        <div class="flex flex-wrap gap-2 mb-4">${badges}</div>
-                        <div class="mt-auto pt-4 border-t border-gray-50">
+                        <div class="flex flex-wrap gap-2 mb-3">${badges}</div>
+                        <div class="mt-auto pt-3 border-t border-gray-50">
                             <p class="text-sm text-gray-600 leading-relaxed line-clamp-4">${item.criteria}</p>
                         </div>
                     </div>`;
-                
                 container.insertAdjacentHTML('beforeend', card);
             });
         }
 
         document.addEventListener('DOMContentLoaded', init);
-        
-        // --- UPDATED EVENT LISTENER ---
-        // 'input' fires immediately when you type, delete, or paste.
         document.getElementById('filter-name').addEventListener('input', applyFilters);
         document.getElementById('filter-support-type').addEventListener('change', applyFilters);
     </script>
