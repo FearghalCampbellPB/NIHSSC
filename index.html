@@ -2,320 +2,406 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Social Support Services Directory</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        primary: '#6366f1', 
-                        secondary: '#8b5cf6', 
-                        accent: '#a855f7', 
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
+                    colors: { primary: '#6366f1', secondary: '#8b5cf6', accent: '#a855f7' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
         }
     </script>
     
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); }
-        .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        .input-focus:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.5); }
-        .transition-all { transition-property: all; transition-duration: 300ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-        .group:hover .group-hover\:translate-x-1 { transform: translateX(0.25rem); }
-        .group:hover .group-hover\:shadow-lg { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        
+        /* Custom Scrollbar for the Multi-select dropdown */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
+
+        /* Mobile optimizations */
+        input, select, button { touch-action: manipulation; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <div class="min-h-screen flex flex-col">
-        <header class="gradient-bg text-white py-6 shadow-lg">
-            <div class="container mx-auto px-4 text-center">
-                <h1 class="text-4xl md:text-5xl font-extrabold mb-2 leading-tight">Social Support Services Directory</h1>
-                <p class="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">Connecting individuals with vital social support organizations.</p>
-            </div>
-        </header>
+    <header class="gradient-bg text-white py-8 shadow-lg">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-3 leading-tight">Social Support Directory</h1>
+            <p class="text-base md:text-lg opacity-90 max-w-2xl mx-auto font-light">Find vital support services in your local community.</p>
+        </div>
+    </header>
 
-        <main class="flex-grow container mx-auto px-4 py-8 md:py-12">
-            
-            <section class="bg-white p-6 rounded-xl card-shadow mb-8 sticky top-0 z-10">
-                <h2 class="text-2xl font-bold mb-6 text-gray-900">Find Support Services</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label for="filter-name" class="block text-sm font-medium text-gray-700 mb-2">Organization Name</label>
-                        <input type="text" id="filter-name" placeholder="e.g., Cancer Support"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary input-focus transition-all">
+    <main class="flex-grow container mx-auto px-4 py-6 md:py-10">
+        
+        <section class="bg-white p-5 md:p-8 rounded-2xl card-shadow mb-8 sticky top-2 z-30 border border-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                
+                <div class="relative">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Search Name</label>
+                    <input type="text" id="filter-name" placeholder="e.g. Cancer Support" 
+                           class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm">
+                </div>
+
+                <div class="relative group" id="geo-dropdown-container">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Geography (Select Multiple)</label>
+                    
+                    <button id="geo-dropdown-btn" onclick="toggleGeoDropdown()" 
+                            class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
+                        <span id="geo-selected-text" class="truncate">All Geographies</span>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+
+                    <div id="geo-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2">
+                        <div class="p-2 text-sm text-gray-400">Loading locations...</div>
                     </div>
-                    <div>
-                        <label for="filter-geography" class="block text-sm font-medium text-gray-700 mb-2">Geography Covered</label>
-                        <select id="filter-geography" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary input-focus transition-all bg-white">
-                            <option value="">All Geographies</option>
-                            <option disabled>Loading options...</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="filter-support-type" class="block text-sm font-medium text-gray-700 mb-2">Type of Support</label>
-                        <select id="filter-support-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary input-focus transition-all bg-white">
+                </div>
+
+                <div class="relative">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Support Type</label>
+                    <div class="relative">
+                        <select id="filter-support-type" 
+                                class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm appearance-none cursor-pointer">
                             <option value="">All Support Types</option>
-                            <option disabled>Loading options...</option>
                         </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
                     </div>
                 </div>
-                <div class="mt-8 flex flex-col sm:flex-row justify-end gap-4">
-                    <button id="apply-filters" class="gradient-bg text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all w-full sm:w-auto">Apply Filters</button>
-                    <button id="clear-filters" class="px-8 py-3 rounded-lg font-semibold text-lg bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all w-full sm:w-auto">Clear Filters</button>
-                </div>
-            </section>
-
-            <div id="loading-indicator" class="text-center py-12">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-                <p class="mt-4 text-gray-600">Loading directory data from Google Sheets...</p>
             </div>
 
-            <section id="services-listing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
-                </section>
-
-            <div id="no-results" class="hidden text-center py-12">
-                <p class="text-xl text-gray-600">No services found matching your criteria.</p>
-                <button onclick="clearAllFiltersAndRender()" class="mt-4 gradient-bg text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all">
+            <div class="mt-6 flex flex-col md:flex-row justify-end gap-3 md:gap-4">
+                <button onclick="clearFilters()" class="order-2 md:order-1 w-full md:w-auto px-6 h-12 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-gray-300">
                     Clear Filters
                 </button>
+                <button onclick="applyFilters()" class="order-1 md:order-2 w-full md:w-auto px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">
+                    Show Results
+                </button>
             </div>
-        </main>
+        </section>
 
-        <footer class="bg-gray-800 text-white py-6">
-            <div class="container mx-auto px-4 text-center text-gray-400">
-                <p>&copy; 2023 Social Support Directory. Powered by Google Sheets.</p>
+        <div id="loading-indicator" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-14 w-14 border-4 border-gray-200 border-t-primary mb-6"></div>
+            <p class="text-lg text-gray-600 font-medium">Loading directory data...</p>
+            <div id="debug-log" class="mt-6 mx-auto max-w-lg p-4 bg-red-50 text-red-600 rounded-lg text-left text-xs font-mono hidden border border-red-200"></div>
+        </div>
+
+        <section id="services-listing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 hidden"></section>
+
+        <div id="no-results" class="hidden text-center py-16">
+            <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
-        </footer>
-    </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">No matches found</h3>
+            <p class="text-gray-500">Try adjusting your filters or clearing your selection.</p>
+            <button onclick="clearFilters()" class="mt-6 text-primary font-semibold hover:underline">Clear all filters</button>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-8 mt-auto">
+        <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
+            <p>&copy; 2023 Social Support Directory.</p>
+        </div>
+    </footer>
 
     <script>
         // ==========================================
-        // 1. CONFIGURATION
+        // CONFIGURATION: PASTE YOUR SHEET URL HERE
         // ==========================================
-        // Paste your Google Sheet URL here (Edit link, Share link, or Publish link)
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/1STWmcZTlcINykC6jvz9ctQ04Otsguh95ZOiE_0Vf_R4/edit?usp=sharing"; 
         // ==========================================
 
         let allServices = [];
+        let allGeographies = new Set();
+        
+        // Color Palette for Tags (Pastel backgrounds, darker text)
+        const tagColors = [
+            "bg-blue-100 text-blue-800 border-blue-200",
+            "bg-emerald-100 text-emerald-800 border-emerald-200",
+            "bg-violet-100 text-violet-800 border-violet-200",
+            "bg-amber-100 text-amber-800 border-amber-200",
+            "bg-rose-100 text-rose-800 border-rose-200",
+            "bg-cyan-100 text-cyan-800 border-cyan-200",
+            "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
+            "bg-indigo-100 text-indigo-800 border-indigo-200",
+        ];
 
-        // DOM Elements
-        const servicesListing = document.getElementById('services-listing');
-        const loadingIndicator = document.getElementById('loading-indicator');
-        const filterNameInput = document.getElementById('filter-name');
-        const filterGeographySelect = document.getElementById('filter-geography');
-        const filterSupportTypeSelect = document.getElementById('filter-support-type');
-        const applyFiltersBtn = document.getElementById('apply-filters');
-        const clearFiltersBtn = document.getElementById('clear-filters');
-        const noResultsMessage = document.getElementById('no-results');
-
-        // Helper: Convert standard Google Sheet URL to the CORS-friendly Visualization API URL
+        // 1. Utilities
         function getSafeApiUrl(url) {
             const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-            if (!idMatch || !idMatch[1]) {
-                console.error("Could not find Spreadsheet ID in URL");
-                return url; 
-            }
-            const id = idMatch[1];
-            return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv`;
+            if (!idMatch || !idMatch[1]) return null;
+            return `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:csv`;
         }
 
-        // Helper: Robust CSV value splitter (handles commas AND semicolons)
         function cleanSplit(value) {
             if (!value) return [];
-            // Convert to string first to be safe
-            const strVal = String(value);
-            // Split by comma (,) OR semicolon (;)
-            return strVal.split(/[;,]+/).map(s => s.trim()).filter(s => s !== "");
+            return String(value).split(/[;,]+/).map(s => s.trim()).filter(s => s !== "");
         }
 
-        // Helper: Case-insensitive column finder
         function getValueByFuzzyKey(row, keyName) {
+            if (!row) return "";
             const keys = Object.keys(row);
-            // Find a key that matches 'geography' or 'Geography' etc.
-            const match = keys.find(k => k.toLowerCase() === keyName.toLowerCase());
+            const match = keys.find(k => k.toLowerCase().trim() === keyName.toLowerCase().trim());
             return match ? row[match] : "";
         }
 
-        // --- STEP 1: INITIALIZE & FETCH DATA ---
+        // Generate a consistent color based on the string text
+        function getColorForType(type) {
+            let hash = 0;
+            for (let i = 0; i < type.length; i++) {
+                hash = type.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % tagColors.length;
+            return tagColors[index];
+        }
+
+        function logError(msg) {
+            console.error(msg);
+            const el = document.getElementById('debug-log');
+            el.classList.remove('hidden');
+            el.innerHTML += `<div>• ${msg}</div>`;
+        }
+
+        // 2. Initialization
         function init() {
-            if(SHEET_URL === "PASTE_YOUR_GOOGLE_SHEET_URL_HERE") {
-                alert("Please open the HTML file and paste your Google Sheet URL in the script tag.");
+            if(SHEET_URL.includes("PASTE_YOUR")) {
+                alert("Please edit the HTML file and paste your Google Sheet URL.");
                 return;
             }
 
             const safeUrl = getSafeApiUrl(SHEET_URL);
-            console.log("Fetching data from:", safeUrl);
+            if (!safeUrl) {
+                logError("Invalid Sheet URL. Use the URL from your browser address bar.");
+                return;
+            }
 
             Papa.parse(safeUrl, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    processData(results.data);
+                    if (results.errors.length > 0) logError("CSV Error: " + results.errors[0].message);
+                    try {
+                        processData(results.data);
+                    } catch (e) {
+                        logError("Processing Error: " + e.message);
+                    }
                 },
                 error: function(err) {
-                    console.error("Error fetching data:", err);
-                    loadingIndicator.innerHTML = `
-                        <p class='text-red-500 font-bold'>Error loading data.</p>
-                        <p class='text-sm text-gray-600'>1. Ensure Sheet is shared as 'Anyone with Link' -> 'Viewer'.</p>
-                    `;
+                    logError("Network Error: " + err.message);
                 }
             });
         }
 
-        // --- STEP 2: PROCESS DATA ---
+        // 3. Process Data
         function processData(data) {
             allServices = data.map((row, index) => {
+                if (Object.keys(row).length === 0) return null;
                 
-                // Get values robustly (ignoring Header capitalization)
                 const rawName = getValueByFuzzyKey(row, "name");
                 const rawGeo = getValueByFuzzyKey(row, "geography");
                 const rawType = getValueByFuzzyKey(row, "supportType");
-                const rawCriteria = getValueByFuzzyKey(row, "criteria");
-                const rawId = getValueByFuzzyKey(row, "id");
-
-                // Clean and Split Lists
-                const types = cleanSplit(rawType);
-                const geos = cleanSplit(rawGeo);
                 
-                return {
-                    id: rawId || index,
-                    name: rawName || "Unnamed Organization",
-                    geography: geos,     // Array of strings (e.g. ['Belfast', 'Lisburn'])
-                    supportType: types,  // Array of strings
-                    criteria: rawCriteria || ""
-                };
-            });
+                if(!rawName && !rawGeo) return null;
 
-            populateFilterOptions();
+                const geos = cleanSplit(rawGeo);
+                geos.forEach(g => allGeographies.add(g));
+
+                return {
+                    id: index,
+                    name: rawName || "Unnamed Org",
+                    geography: geos,
+                    supportType: cleanSplit(rawType),
+                    criteria: getValueByFuzzyKey(row, "criteria") || ""
+                };
+            }).filter(item => item !== null);
+
+            populateFilters();
             renderServices(allServices);
             
-            loadingIndicator.classList.add('hidden');
-            servicesListing.classList.remove('hidden');
+            document.getElementById('loading-indicator').classList.add('hidden');
+            document.getElementById('services-listing').classList.remove('hidden');
         }
 
-        // --- STEP 3: POPULATE DROPDOWNS ---
-        function populateFilterOptions() {
-            const uniqueGeographies = new Set();
-            const uniqueSupportTypes = new Set();
-
-            allServices.forEach(service => {
-                service.geography.forEach(geo => uniqueGeographies.add(geo));
-                service.supportType.forEach(type => uniqueSupportTypes.add(type));
-            });
-
-            // Populate Geography Dropdown
-            filterGeographySelect.innerHTML = '<option value="">All Geographies</option>';
-            Array.from(uniqueGeographies).sort().forEach(geo => {
-                const option = document.createElement('option');
-                option.value = geo;
-                option.textContent = geo;
-                filterGeographySelect.appendChild(option);
-            });
-
-            // Populate Support Type Dropdown
-            filterSupportTypeSelect.innerHTML = '<option value="">All Support Types</option>';
-            Array.from(uniqueSupportTypes).sort().forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                filterSupportTypeSelect.appendChild(option);
-            });
-        }
-
-        // --- STEP 4: RENDER CARDS ---
-        function renderServices(filteredServices) {
-            servicesListing.innerHTML = '';
+        // 4. UI: Populate Filters
+        function populateFilters() {
+            // Populate Support Type (Standard Select)
+            const typeSelect = document.getElementById('filter-support-type');
+            const uniqueTypes = new Set();
+            allServices.forEach(s => s.supportType.forEach(t => uniqueTypes.add(t)));
             
-            if (filteredServices.length === 0) {
-                noResultsMessage.classList.remove('hidden');
-                servicesListing.classList.add('hidden');
+            Array.from(uniqueTypes).sort().forEach(t => {
+                typeSelect.add(new Option(t, t));
+            });
+
+            // Populate Geography (Custom Checkboxes)
+            const geoMenu = document.getElementById('geo-dropdown-menu');
+            geoMenu.innerHTML = '';
+            
+            if(allGeographies.size === 0) {
+                geoMenu.innerHTML = '<div class="p-2 text-gray-400">No locations found</div>';
             } else {
-                noResultsMessage.classList.add('hidden');
-                servicesListing.classList.remove('hidden');
-                
-                const displayLimit = filteredServices.length > 100 ? 100 : filteredServices.length;
-
-                for(let i = 0; i < displayLimit; i++) {
-                    const service = filteredServices[i];
-                    
-                    const card = document.createElement('div');
-                    card.className = 'bg-white p-6 rounded-xl card-shadow border border-gray-200 group hover:group-hover:shadow-lg transition-all transform hover:-translate-y-1';
-                    
-                    // Create Support Type Badges
-                    const badgesHtml = service.supportType.map(type => 
-                        `<span class="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">${type}</span>`
-                    ).join('');
-
-                    // Join Geography array back to string for display
-                    const geoDisplay = service.geography.join(', ');
-
-                    card.innerHTML = `
-                        <h3 class="font-bold text-xl text-gray-900 mb-3">${service.name}</h3>
-                        <p class="text-sm text-gray-600 mb-2"><strong>Geography:</strong> ${geoDisplay}</p>
-                        <div class="flex flex-wrap gap-2 mb-4">${badgesHtml}</div>
-                        <p class="text-gray-700 text-sm"><strong>Criteria:</strong> ${service.criteria}</p>
+                Array.from(allGeographies).sort().forEach(geo => {
+                    const label = document.createElement('label');
+                    label.className = "flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg";
+                    label.innerHTML = `
+                        <input type="checkbox" value="${geo}" class="geo-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                        <span class="ml-2 text-gray-700 text-sm">${geo}</span>
                     `;
-                    servicesListing.appendChild(card);
-                }
+                    // Add click listener to update label immediately
+                    label.querySelector('input').addEventListener('change', updateGeoLabel);
+                    geoMenu.appendChild(label);
+                });
             }
         }
 
-        // --- STEP 5: FILTER LOGIC ---
-        function applyFilters() {
-            const nameFilter = filterNameInput.value.toLowerCase().trim();
-            const geographyFilter = filterGeographySelect.value;
-            const supportTypeFilter = filterSupportTypeSelect.value;
+        // 5. UI: Custom Dropdown Logic
+        function toggleGeoDropdown() {
+            const menu = document.getElementById('geo-dropdown-menu');
+            menu.classList.toggle('hidden');
+        }
 
-            const filtered = allServices.filter(service => {
-                // Name match
-                const matchesName = nameFilter === "" || (service.name && service.name.toLowerCase().includes(nameFilter));
+        // Close dropdown if clicking outside
+        document.addEventListener('click', function(event) {
+            const container = document.getElementById('geo-dropdown-container');
+            const menu = document.getElementById('geo-dropdown-menu');
+            if (!container.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function updateGeoLabel() {
+            const checkboxes = document.querySelectorAll('.geo-checkbox:checked');
+            const labelSpan = document.getElementById('geo-selected-text');
+            const btn = document.getElementById('geo-dropdown-btn');
+            
+            if (checkboxes.length === 0) {
+                labelSpan.textContent = "All Geographies";
+                labelSpan.classList.remove('text-gray-800', 'font-medium');
+                labelSpan.classList.add('text-gray-500');
+            } else if (checkboxes.length === 1) {
+                labelSpan.textContent = checkboxes[0].value;
+                labelSpan.classList.add('text-gray-800', 'font-medium');
+                labelSpan.classList.remove('text-gray-500');
+            } else {
+                labelSpan.textContent = `${checkboxes.length} Locations Selected`;
+                labelSpan.classList.add('text-gray-800', 'font-medium');
+                labelSpan.classList.remove('text-gray-500');
+            }
+            
+            // Auto apply filters on desktop for better UX? 
+            // The prompt implies a "Search" button flow, but live is usually better. 
+            // We will stick to the button flow as per the HTML structure, but user can uncomment below for live.
+            // applyFilters(); 
+        }
+
+        // 6. Filter Logic
+        function applyFilters() {
+            // Get Name
+            const nameInput = document.getElementById('filter-name').value.toLowerCase().trim();
+            
+            // Get Selected Geographies
+            const selectedGeos = Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(cb => cb.value);
+            
+            // Get Type
+            const typeInput = document.getElementById('filter-support-type').value;
+
+            const filtered = allServices.filter(item => {
+                // Name match (fuzzy)
+                const matchName = !nameInput || item.name.toLowerCase().includes(nameInput);
                 
-                // Geography match (Array includes)
-                const matchesGeography = geographyFilter === "" || service.geography.includes(geographyFilter);
+                // Geography match (OR Logic: Does service have ANY of the selected locations?)
+                // If no locations selected, show all.
+                const matchGeo = selectedGeos.length === 0 || item.geography.some(g => selectedGeos.includes(g));
                 
-                // Type match (Array includes)
-                const matchesSupportType = supportTypeFilter === "" || service.supportType.includes(supportTypeFilter);
-                
-                return matchesName && matchesGeography && matchesSupportType;
+                // Type match (Exact)
+                const matchType = !typeInput || item.supportType.includes(typeInput);
+
+                return matchName && matchGeo && matchType;
             });
 
             renderServices(filtered);
+            // Close dropdown if open on mobile
+            document.getElementById('geo-dropdown-menu').classList.add('hidden');
         }
 
         function clearFilters() {
-            filterNameInput.value = '';
-            filterGeographySelect.value = '';
-            filterSupportTypeSelect.value = '';
+            document.getElementById('filter-name').value = '';
+            document.getElementById('filter-support-type').value = '';
+            
+            // Clear checkboxes
+            document.querySelectorAll('.geo-checkbox').forEach(cb => cb.checked = false);
+            updateGeoLabel();
+
             applyFilters();
         }
 
-        function clearAllFiltersAndRender() {
-            clearFilters();
+        // 7. Render
+        function renderServices(list) {
+            const container = document.getElementById('services-listing');
+            container.innerHTML = '';
+            
+            if (list.length === 0) {
+                document.getElementById('no-results').classList.remove('hidden');
+                container.classList.add('hidden');
+                return;
+            }
+            
+            document.getElementById('no-results').classList.add('hidden');
+            container.classList.remove('hidden');
+
+            // Limit to 100 for performance
+            list.slice(0, 100).forEach(item => {
+                
+                // Create colored badges
+                const badges = item.supportType.map(t => {
+                    const colorClass = getColorForType(t);
+                    return `<span class="px-2.5 py-1 ${colorClass} text-xs font-semibold rounded-full border bg-opacity-50 whitespace-nowrap">${t}</span>`;
+                }).join('');
+
+                const geoText = item.geography.join(', ');
+
+                const card = `
+                    <div class="bg-white p-6 rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-lg text-gray-900 leading-snug mb-1">${item.name}</h3>
+                            <div class="text-sm text-gray-500 flex items-start gap-1">
+                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span>${geoText}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${badges}
+                        </div>
+                        
+                        <div class="mt-auto pt-4 border-t border-gray-50">
+                            <p class="text-sm text-gray-600 leading-relaxed line-clamp-4">${item.criteria}</p>
+                        </div>
+                    </div>`;
+                
+                container.insertAdjacentHTML('beforeend', card);
+            });
         }
 
-        // --- EVENTS ---
+        // Start
         document.addEventListener('DOMContentLoaded', init);
         
-        applyFiltersBtn.addEventListener('click', applyFilters);
-        clearFiltersBtn.addEventListener('click', clearFilters);
-        filterNameInput.addEventListener('input', applyFilters); 
-        filterGeographySelect.addEventListener('change', applyFilters);
-        filterSupportTypeSelect.addEventListener('change', applyFilters);
+        // Listeners
+        document.getElementById('filter-name').addEventListener('keyup', (e) => { if(e.key === 'Enter') applyFilters(); });
     </script>
 </body>
 </html>
