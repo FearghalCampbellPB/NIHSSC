@@ -139,7 +139,7 @@
         // ==========================================
         // CONFIGURATION
         // ==========================================
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/1STWmcZTlcINykC6jvz9ctQ04Otsguh95ZOiE_0Vf_R4/edit?usp=sharing"; 
+        const SHEET_URL = "PASTE_YOUR_GOOGLE_SHEET_URL_HERE"; 
         // ==========================================
 
         let allServices = [];
@@ -176,66 +176,59 @@
             });
         }
 
+        // --- TOGGLE CARD (THE MISSING FUNCTION IS HERE NOW) ---
+        function toggleCard(id) {
+            const details = document.getElementById(`details-${id}`);
+            const text = document.getElementById(`btn-text-${id}`);
+            const chevron = document.getElementById(`btn-icon-${id}`);
+            
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+                details.classList.add('details-enter');
+                text.textContent = "Close Details";
+                chevron.classList.add('rotate-180');
+            } else {
+                details.classList.add('hidden');
+                details.classList.remove('details-enter');
+                text.textContent = "View Contact Details";
+                chevron.classList.remove('rotate-180');
+            }
+        }
+
         // --- HEART & TOAST LOGIC ---
         function toggleHeart(e, id) {
-            e.stopPropagation(); // Stop card expansion
-            
+            e.stopPropagation(); 
             const btn = document.getElementById(`heart-btn-${id}`);
             const icon = document.getElementById(`heart-icon-${id}`);
             
             if (savedIds.has(id)) {
-                // Unsave
                 savedIds.delete(id);
                 showToast("Removed from favorites");
-                // Update UI immediately
-                icon.setAttribute("fill", "none");
-                icon.classList.remove("text-red-500");
-                icon.classList.add("text-gray-300");
-                btn.classList.remove("bg-red-50");
+                icon.setAttribute("fill", "none"); icon.classList.remove("text-red-500"); icon.classList.add("text-gray-300"); btn.classList.remove("bg-red-50");
             } else {
-                // Save
                 savedIds.add(id);
                 showToast("Saved to favorites");
-                // Update UI immediately
-                icon.setAttribute("fill", "currentColor");
-                icon.classList.remove("text-gray-300");
-                icon.classList.add("text-red-500");
-                btn.classList.add("bg-red-50");
+                icon.setAttribute("fill", "currentColor"); icon.classList.remove("text-gray-300"); icon.classList.add("text-red-500"); btn.classList.add("bg-red-50");
             }
-
-            // Persist
             localStorage.setItem('socialDirectorySaved', JSON.stringify([...savedIds]));
-            
-            // If we are currently viewing only favorites, re-render to remove the unsaved item
             if(showFavoritesOnly) applyFilters();
         }
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-message').textContent = msg;
-            toast.classList.remove('toast-hidden');
-            toast.classList.add('toast-visible');
-            
-            // Hide after 2s
-            setTimeout(() => {
-                toast.classList.remove('toast-visible');
-                toast.classList.add('toast-hidden');
-            }, 2000);
+            toast.classList.remove('toast-hidden'); toast.classList.add('toast-visible');
+            setTimeout(() => { toast.classList.remove('toast-visible'); toast.classList.add('toast-hidden'); }, 2000);
         }
 
         function toggleFavoritesFilter() {
             showFavoritesOnly = !showFavoritesOnly;
             const btn = document.getElementById('btn-favorites');
             const txt = document.getElementById('fav-btn-text');
-            
             if (showFavoritesOnly) {
-                btn.classList.add('bg-red-50', 'border-red-200');
-                btn.querySelector('svg').classList.add('text-red-500', 'fill-current');
-                txt.textContent = "Show All Items";
+                btn.classList.add('bg-red-50', 'border-red-200'); btn.querySelector('svg').classList.add('text-red-500', 'fill-current'); txt.textContent = "Show All Items";
             } else {
-                btn.classList.remove('bg-red-50', 'border-red-200');
-                btn.querySelector('svg').classList.remove('text-red-500', 'fill-current');
-                txt.textContent = "View Favorites";
+                btn.classList.remove('bg-red-50', 'border-red-200'); btn.querySelector('svg').classList.remove('text-red-500', 'fill-current'); txt.textContent = "View Favorites";
             }
             applyFilters();
         }
@@ -256,7 +249,7 @@
                 const types = cleanSplit(rawType); types.forEach(t => allSupportTypes.add(t));
 
                 return {
-                    id: index, // Stable-ish ID based on row order
+                    id: index, 
                     name: rawName || "Unnamed Org", 
                     geography: geos,
                     supportType: types, 
@@ -293,7 +286,6 @@
 
                 const card = `
                     <div class="bg-white rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col h-full group overflow-hidden relative">
-                        
                         <div class="p-5 flex flex-col h-full">
                             <div class="flex justify-between items-start gap-3 mb-3">
                                 <div>
@@ -304,13 +296,9 @@
                                     </div>
                                 </div>
                                 <button id="heart-btn-${item.id}" onclick="toggleHeart(event, ${item.id})" class="p-2 rounded-full hover:bg-gray-100 transition-colors ${isSaved ? 'bg-red-50' : ''} flex-shrink-0">
-                                    <svg id="heart-icon-${item.id}" class="w-6 h-6 transition-all ${isSaved ? 'text-red-500' : 'text-gray-300'}" 
-                                         fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                    </svg>
+                                    <svg id="heart-icon-${item.id}" class="w-6 h-6 transition-all ${isSaved ? 'text-red-500' : 'text-gray-300'}" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                                 </button>
                             </div>
-
                             <div class="flex flex-wrap gap-2 mb-3">${badges}</div>
                             <div class="mb-4 text-sm text-gray-600 leading-relaxed line-clamp-3">${item.criteria}</div>
                             <div class="mt-auto"></div>
