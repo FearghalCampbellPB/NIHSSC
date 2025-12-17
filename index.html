@@ -54,7 +54,6 @@
                         <p class="text-xs text-gray-500 md:hidden" id="filter-status-text">Tap to expand filters</p>
                     </div>
                 </div>
-                
                 <button id="filter-chevron" class="md:hidden transform transition-transform duration-200">
                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
@@ -76,22 +75,20 @@
                             <span id="geo-selected-text" class="truncate">All Geographies</span>
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
-
                         <div id="geo-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2">
                             <div class="p-2 text-sm text-gray-400">Loading locations...</div>
                         </div>
                     </div>
 
-                    <div class="relative">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Support Type</label>
-                        <div class="relative">
-                            <select id="filter-support-type" 
-                                    class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm appearance-none cursor-pointer">
-                                <option value="">All Support Types</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
+                    <div class="relative group" id="type-dropdown-container">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Support Type (Multiple)</label>
+                        <button id="type-dropdown-btn" onclick="toggleTypeDropdown(event)" 
+                                class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
+                            <span id="type-selected-text" class="truncate">All Support Types</span>
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="type-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2">
+                            <div class="p-2 text-sm text-gray-400">Loading types...</div>
                         </div>
                     </div>
                 </div>
@@ -135,11 +132,12 @@
         // ==========================================
         // CONFIGURATION: PASTE YOUR SHEET URL HERE
         // ==========================================
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/1STWmcZTlcINykC6jvz9ctQ04Otsguh95ZOiE_0Vf_R4/edit?usp=sharing"; 
+        const SHEET_URL = "PASTE_YOUR_GOOGLE_SHEET_URL_HERE"; 
         // ==========================================
 
         let allServices = [];
         let allGeographies = new Set();
+        let allSupportTypes = new Set();
         
         // Colors
         const tagColors = [
@@ -151,12 +149,9 @@
 
         // --- MOBILE TOGGLE LOGIC ---
         function toggleMobileFilters() {
-            // Only toggle on mobile screens (using logic similar to Tailwind's 'md' breakpoint)
             if (window.innerWidth >= 768) return; 
-
             const content = document.getElementById('filter-content');
             const chevron = document.getElementById('filter-chevron');
-            
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
                 chevron.classList.add('rotate-180');
@@ -166,7 +161,6 @@
             }
         }
 
-        // Collapse filters after clicking "Show Results" on mobile
         function collapseMobileFilters() {
             if (window.innerWidth < 768) {
                 document.getElementById('filter-content').classList.add('hidden');
@@ -239,9 +233,12 @@
                 const geos = cleanSplit(rawGeo);
                 geos.forEach(g => allGeographies.add(g));
 
+                const types = cleanSplit(rawType);
+                types.forEach(t => allSupportTypes.add(t));
+
                 return {
                     id: index, name: rawName || "Unnamed Org", geography: geos,
-                    supportType: cleanSplit(rawType), criteria: getValueByFuzzyKey(row, "criteria") || ""
+                    supportType: types, criteria: getValueByFuzzyKey(row, "criteria") || ""
                 };
             }).filter(item => item !== null);
 
@@ -251,13 +248,29 @@
             document.getElementById('services-listing').classList.remove('hidden');
         }
 
-        // --- FILTERS ---
+        // --- FILTERS UI ---
         function populateFilters() {
-            const typeSelect = document.getElementById('filter-support-type');
-            const uniqueTypes = new Set();
-            allServices.forEach(s => s.supportType.forEach(t => uniqueTypes.add(t)));
-            Array.from(uniqueTypes).sort().forEach(t => typeSelect.add(new Option(t, t)));
+            // Populate Support Type (Checkboxes)
+            const typeMenu = document.getElementById('type-dropdown-menu');
+            typeMenu.innerHTML = '';
+            if(allSupportTypes.size === 0) {
+                typeMenu.innerHTML = '<div class="p-2 text-gray-400">No types found</div>';
+            } else {
+                Array.from(allSupportTypes).sort().forEach(type => {
+                    const label = document.createElement('label');
+                    label.className = "flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg";
+                    label.innerHTML = `
+                        <input type="checkbox" value="${type}" class="type-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                        <span class="ml-2 text-gray-700 text-sm">${type}</span>
+                    `;
+                    label.querySelector('input').addEventListener('change', () => {
+                        updateTypeLabel(); applyFilters();
+                    });
+                    typeMenu.appendChild(label);
+                });
+            }
 
+            // Populate Geography (Checkboxes)
             const geoMenu = document.getElementById('geo-dropdown-menu');
             geoMenu.innerHTML = '';
             if(allGeographies.size === 0) {
@@ -278,26 +291,50 @@
             }
         }
 
+        // --- DROPDOWN LOGIC ---
         function toggleGeoDropdown(e) {
-            e.stopPropagation(); // Prevent bubbling causing immediate close
+            e.stopPropagation();
             const menu = document.getElementById('geo-dropdown-menu');
+            const otherMenu = document.getElementById('type-dropdown-menu');
+            otherMenu.classList.add('hidden'); // Close other
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleTypeDropdown(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('type-dropdown-menu');
+            const otherMenu = document.getElementById('geo-dropdown-menu');
+            otherMenu.classList.add('hidden'); // Close other
             menu.classList.toggle('hidden');
         }
 
         // Close dropdowns on click outside
         document.addEventListener('click', function(event) {
-            const container = document.getElementById('geo-dropdown-container');
-            const menu = document.getElementById('geo-dropdown-menu');
-            if (!container.contains(event.target)) {
-                menu.classList.add('hidden');
-            }
+            const geoContainer = document.getElementById('geo-dropdown-container');
+            const typeContainer = document.getElementById('type-dropdown-container');
+            
+            if (!geoContainer.contains(event.target)) document.getElementById('geo-dropdown-menu').classList.add('hidden');
+            if (!typeContainer.contains(event.target)) document.getElementById('type-dropdown-menu').classList.add('hidden');
         });
 
+        // --- LABEL UPDATERS ---
         function updateGeoLabel() {
             const checkboxes = document.querySelectorAll('.geo-checkbox:checked');
             const labelSpan = document.getElementById('geo-selected-text');
             if (checkboxes.length === 0) {
                 labelSpan.textContent = "All Geographies";
+                labelSpan.className = "truncate text-gray-500";
+            } else {
+                labelSpan.textContent = `${checkboxes.length} Selected`;
+                labelSpan.className = "truncate text-gray-800 font-medium";
+            }
+        }
+
+        function updateTypeLabel() {
+            const checkboxes = document.querySelectorAll('.type-checkbox:checked');
+            const labelSpan = document.getElementById('type-selected-text');
+            if (checkboxes.length === 0) {
+                labelSpan.textContent = "All Support Types";
                 labelSpan.className = "truncate text-gray-500";
             } else {
                 labelSpan.textContent = `${checkboxes.length} Selected`;
@@ -314,22 +351,25 @@
             }
         }
 
+        // --- FILTERING ---
         function applyFilters() {
             const searchText = document.getElementById('filter-name').value.toLowerCase().trim();
             const selectedGeos = Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(cb => cb.value);
-            const typeInput = document.getElementById('filter-support-type').value;
+            const selectedTypes = Array.from(document.querySelectorAll('.type-checkbox:checked')).map(cb => cb.value);
 
-            // Count active filters for mobile UI
             let activeFilters = 0;
             if(searchText) activeFilters++;
             if(selectedGeos.length > 0) activeFilters++;
-            if(typeInput) activeFilters++;
+            if(selectedTypes.length > 0) activeFilters++;
             updateMobileStatus(activeFilters);
 
             const filtered = allServices.filter(item => {
                 const matchSearch = !searchText || item.name.toLowerCase().includes(searchText) || item.criteria.toLowerCase().includes(searchText);
+                
+                // OR Logic: Does item have ANY of the selected locations/types?
                 const matchGeo = selectedGeos.length === 0 || item.geography.some(g => selectedGeos.includes(g));
-                const matchType = !typeInput || item.supportType.includes(typeInput);
+                const matchType = selectedTypes.length === 0 || item.supportType.some(t => selectedTypes.includes(t));
+
                 return matchSearch && matchGeo && matchType;
             });
 
@@ -338,9 +378,12 @@
 
         function clearFilters() {
             document.getElementById('filter-name').value = '';
-            document.getElementById('filter-support-type').value = '';
+            
             document.querySelectorAll('.geo-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.type-checkbox').forEach(cb => cb.checked = false);
+            
             updateGeoLabel();
+            updateTypeLabel();
             applyFilters();
         }
 
@@ -384,7 +427,6 @@
 
         document.addEventListener('DOMContentLoaded', init);
         document.getElementById('filter-name').addEventListener('input', applyFilters);
-        document.getElementById('filter-support-type').addEventListener('change', applyFilters);
     </script>
 </body>
 </html>
