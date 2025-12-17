@@ -50,8 +50,8 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 
                 <div class="relative">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Search Name</label>
-                    <input type="text" id="filter-name" placeholder="e.g. Cancer Support" 
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Search</label>
+                    <input type="text" id="filter-name" placeholder="Search name or criteria..." 
                            class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm">
                 </div>
 
@@ -127,7 +127,7 @@
         let allServices = [];
         let allGeographies = new Set();
         
-        // Color Palette for Tags (Pastel backgrounds, darker text)
+        // Color Palette for Tags
         const tagColors = [
             "bg-blue-100 text-blue-800 border-blue-200",
             "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -139,7 +139,6 @@
             "bg-indigo-100 text-indigo-800 border-indigo-200",
         ];
 
-        // 1. Utilities
         function getSafeApiUrl(url) {
             const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
             if (!idMatch || !idMatch[1]) return null;
@@ -158,7 +157,6 @@
             return match ? row[match] : "";
         }
 
-        // Generate a consistent color based on the string text
         function getColorForType(type) {
             let hash = 0;
             for (let i = 0; i < type.length; i++) {
@@ -175,7 +173,6 @@
             el.innerHTML += `<div>• ${msg}</div>`;
         }
 
-        // 2. Initialization
         function init() {
             if(SHEET_URL.includes("PASTE_YOUR")) {
                 alert("Please edit the HTML file and paste your Google Sheet URL.");
@@ -184,7 +181,7 @@
 
             const safeUrl = getSafeApiUrl(SHEET_URL);
             if (!safeUrl) {
-                logError("Invalid Sheet URL. Use the URL from your browser address bar.");
+                logError("Invalid Sheet URL.");
                 return;
             }
 
@@ -206,7 +203,6 @@
             });
         }
 
-        // 3. Process Data
         function processData(data) {
             allServices = data.map((row, index) => {
                 if (Object.keys(row).length === 0) return null;
@@ -236,9 +232,8 @@
             document.getElementById('services-listing').classList.remove('hidden');
         }
 
-        // 4. UI: Populate Filters
         function populateFilters() {
-            // Populate Support Type (Standard Select)
+            // Support Type
             const typeSelect = document.getElementById('filter-support-type');
             const uniqueTypes = new Set();
             allServices.forEach(s => s.supportType.forEach(t => uniqueTypes.add(t)));
@@ -247,7 +242,7 @@
                 typeSelect.add(new Option(t, t));
             });
 
-            // Populate Geography (Custom Checkboxes)
+            // Geography Checkboxes
             const geoMenu = document.getElementById('geo-dropdown-menu');
             geoMenu.innerHTML = '';
             
@@ -261,20 +256,21 @@
                         <input type="checkbox" value="${geo}" class="geo-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
                         <span class="ml-2 text-gray-700 text-sm">${geo}</span>
                     `;
-                    // Add click listener to update label immediately
-                    label.querySelector('input').addEventListener('change', updateGeoLabel);
+                    // Updated: Triggers filter immediately on change
+                    label.querySelector('input').addEventListener('change', () => {
+                        updateGeoLabel();
+                        applyFilters(); // Real-time filtering
+                    });
                     geoMenu.appendChild(label);
                 });
             }
         }
 
-        // 5. UI: Custom Dropdown Logic
         function toggleGeoDropdown() {
             const menu = document.getElementById('geo-dropdown-menu');
             menu.classList.toggle('hidden');
         }
 
-        // Close dropdown if clicking outside
         document.addEventListener('click', function(event) {
             const container = document.getElementById('geo-dropdown-container');
             const menu = document.getElementById('geo-dropdown-menu');
@@ -286,7 +282,6 @@
         function updateGeoLabel() {
             const checkboxes = document.querySelectorAll('.geo-checkbox:checked');
             const labelSpan = document.getElementById('geo-selected-text');
-            const btn = document.getElementById('geo-dropdown-btn');
             
             if (checkboxes.length === 0) {
                 labelSpan.textContent = "All Geographies";
@@ -301,55 +296,39 @@
                 labelSpan.classList.add('text-gray-800', 'font-medium');
                 labelSpan.classList.remove('text-gray-500');
             }
-            
-            // Auto apply filters on desktop for better UX? 
-            // The prompt implies a "Search" button flow, but live is usually better. 
-            // We will stick to the button flow as per the HTML structure, but user can uncomment below for live.
-            // applyFilters(); 
         }
 
-        // 6. Filter Logic
+        // --- UPDATED FILTER LOGIC ---
         function applyFilters() {
-            // Get Name
-            const nameInput = document.getElementById('filter-name').value.toLowerCase().trim();
+            // 1. Get Search Text (Lowercase for insensitive search)
+            const searchText = document.getElementById('filter-name').value.toLowerCase().trim();
             
-            // Get Selected Geographies
             const selectedGeos = Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(cb => cb.value);
-            
-            // Get Type
             const typeInput = document.getElementById('filter-support-type').value;
 
             const filtered = allServices.filter(item => {
-                // Name match (fuzzy)
-                const matchName = !nameInput || item.name.toLowerCase().includes(nameInput);
+                // 2. Updated Match Logic: Checks Name OR Criteria
+                const matchSearch = !searchText || 
+                                    item.name.toLowerCase().includes(searchText) || 
+                                    item.criteria.toLowerCase().includes(searchText);
                 
-                // Geography match (OR Logic: Does service have ANY of the selected locations?)
-                // If no locations selected, show all.
                 const matchGeo = selectedGeos.length === 0 || item.geography.some(g => selectedGeos.includes(g));
-                
-                // Type match (Exact)
                 const matchType = !typeInput || item.supportType.includes(typeInput);
 
-                return matchName && matchGeo && matchType;
+                return matchSearch && matchGeo && matchType;
             });
 
             renderServices(filtered);
-            // Close dropdown if open on mobile
-            document.getElementById('geo-dropdown-menu').classList.add('hidden');
         }
 
         function clearFilters() {
             document.getElementById('filter-name').value = '';
             document.getElementById('filter-support-type').value = '';
-            
-            // Clear checkboxes
             document.querySelectorAll('.geo-checkbox').forEach(cb => cb.checked = false);
             updateGeoLabel();
-
             applyFilters();
         }
 
-        // 7. Render
         function renderServices(list) {
             const container = document.getElementById('services-listing');
             container.innerHTML = '';
@@ -363,10 +342,7 @@
             document.getElementById('no-results').classList.add('hidden');
             container.classList.remove('hidden');
 
-            // Limit to 100 for performance
             list.slice(0, 100).forEach(item => {
-                
-                // Create colored badges
                 const badges = item.supportType.map(t => {
                     const colorClass = getColorForType(t);
                     return `<span class="px-2.5 py-1 ${colorClass} text-xs font-semibold rounded-full border bg-opacity-50 whitespace-nowrap">${t}</span>`;
@@ -383,11 +359,7 @@
                                 <span>${geoText}</span>
                             </div>
                         </div>
-                        
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            ${badges}
-                        </div>
-                        
+                        <div class="flex flex-wrap gap-2 mb-4">${badges}</div>
                         <div class="mt-auto pt-4 border-t border-gray-50">
                             <p class="text-sm text-gray-600 leading-relaxed line-clamp-4">${item.criteria}</p>
                         </div>
@@ -397,11 +369,12 @@
             });
         }
 
-        // Start
         document.addEventListener('DOMContentLoaded', init);
         
-        // Listeners
-        document.getElementById('filter-name').addEventListener('keyup', (e) => { if(e.key === 'Enter') applyFilters(); });
+        // --- UPDATED EVENT LISTENER ---
+        // 'input' fires immediately when you type, delete, or paste.
+        document.getElementById('filter-name').addEventListener('input', applyFilters);
+        document.getElementById('filter-support-type').addEventListener('change', applyFilters);
     </script>
 </body>
 </html>
