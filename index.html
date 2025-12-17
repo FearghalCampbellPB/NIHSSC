@@ -24,11 +24,19 @@
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); }
         .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
         input, select, button { touch-action: manipulation; }
+        
+        /* Smooth fade in for details */
+        .details-enter {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
@@ -43,7 +51,6 @@
     <main class="flex-grow container mx-auto px-4 py-4 md:py-10">
         
         <section class="bg-white rounded-xl card-shadow mb-6 sticky top-2 z-30 border border-gray-100 transition-all duration-300">
-            
             <div class="flex justify-between items-center p-4 md:p-6 cursor-pointer md:cursor-default" onclick="toggleMobileFilters()">
                 <div class="flex items-center gap-2">
                     <div class="p-2 bg-indigo-50 rounded-lg text-primary">
@@ -61,45 +68,30 @@
 
             <div id="filter-content" class="hidden md:block px-4 pb-4 md:px-6 md:pb-6 border-t md:border-t-0 border-gray-100">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                    
                     <div class="relative">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Search</label>
-                        <input type="text" id="filter-name" placeholder="Search name or criteria..." 
-                               class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm">
+                        <input type="text" id="filter-name" placeholder="Search name or criteria..." class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm">
                     </div>
-
                     <div class="relative group" id="geo-dropdown-container">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Geography (Multiple)</label>
-                        <button id="geo-dropdown-btn" onclick="toggleGeoDropdown(event)" 
-                                class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
+                        <button onclick="toggleGeoDropdown(event)" class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
                             <span id="geo-selected-text" class="truncate">All Geographies</span>
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
-                        <div id="geo-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2">
-                            <div class="p-2 text-sm text-gray-400">Loading locations...</div>
-                        </div>
+                        <div id="geo-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2"></div>
                     </div>
-
                     <div class="relative group" id="type-dropdown-container">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Support Type (Multiple)</label>
-                        <button id="type-dropdown-btn" onclick="toggleTypeDropdown(event)" 
-                                class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
+                        <button onclick="toggleTypeDropdown(event)" class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
                             <span id="type-selected-text" class="truncate">All Support Types</span>
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
-                        <div id="type-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2">
-                            <div class="p-2 text-sm text-gray-400">Loading types...</div>
-                        </div>
+                        <div id="type-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2"></div>
                     </div>
                 </div>
-
                 <div class="mt-6 flex flex-col md:flex-row justify-end gap-3 md:gap-4">
-                    <button onclick="clearFilters()" class="order-2 md:order-1 w-full md:w-auto px-6 h-12 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
-                        Clear Filters
-                    </button>
-                    <button onclick="applyFilters(); collapseMobileFilters();" class="order-1 md:order-2 w-full md:w-auto px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">
-                        Show Results
-                    </button>
+                    <button onclick="clearFilters()" class="order-2 md:order-1 w-full md:w-auto px-6 h-12 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Clear Filters</button>
+                    <button onclick="applyFilters(); collapseMobileFilters();" class="order-1 md:order-2 w-full md:w-auto px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">Show Results</button>
                 </div>
             </div>
         </section>
@@ -110,15 +102,14 @@
             <div id="debug-log" class="mt-6 mx-auto max-w-lg p-4 bg-red-50 text-red-600 rounded-lg text-left text-xs font-mono hidden border border-red-200"></div>
         </div>
 
-        <section id="services-listing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 hidden"></section>
+        <section id="services-listing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 hidden items-start"></section>
 
         <div id="no-results" class="hidden text-center py-16">
             <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
                 <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">No matches found</h3>
-            <p class="text-gray-500">Try adjusting your filters or clearing your selection.</p>
-            <button onclick="clearFilters()" class="mt-6 text-primary font-semibold hover:underline">Clear all filters</button>
+            <button onclick="clearFilters()" class="mt-4 text-primary font-semibold hover:underline">Clear all filters</button>
         </div>
     </main>
 
@@ -132,14 +123,13 @@
         // ==========================================
         // CONFIGURATION: PASTE YOUR SHEET URL HERE
         // ==========================================
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/1STWmcZTlcINykC6jvz9ctQ04Otsguh95ZOiE_0Vf_R4/edit?usp=sharing"; 
+        const SHEET_URL = "PASTE_YOUR_GOOGLE_SHEET_URL_HERE"; 
         // ==========================================
 
         let allServices = [];
         let allGeographies = new Set();
         let allSupportTypes = new Set();
         
-        // Colors
         const tagColors = [
             "bg-blue-100 text-blue-800 border-blue-200", "bg-emerald-100 text-emerald-800 border-emerald-200",
             "bg-violet-100 text-violet-800 border-violet-200", "bg-amber-100 text-amber-800 border-amber-200",
@@ -147,77 +137,34 @@
             "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200", "bg-indigo-100 text-indigo-800 border-indigo-200",
         ];
 
-        // --- MOBILE TOGGLE LOGIC ---
-        function toggleMobileFilters() {
-            if (window.innerWidth >= 768) return; 
-            const content = document.getElementById('filter-content');
-            const chevron = document.getElementById('filter-chevron');
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                chevron.classList.add('rotate-180');
+        // --- EXPAND CARD LOGIC ---
+        function toggleCard(id) {
+            const detailsDiv = document.getElementById(`details-${id}`);
+            const btnText = document.getElementById(`btn-text-${id}`);
+            const btnIcon = document.getElementById(`btn-icon-${id}`);
+
+            if (detailsDiv.classList.contains('hidden')) {
+                // Expand
+                detailsDiv.classList.remove('hidden');
+                detailsDiv.classList.add('details-enter');
+                btnText.textContent = "Hide Contact Details";
+                btnIcon.classList.add('rotate-180');
             } else {
-                content.classList.add('hidden');
-                chevron.classList.remove('rotate-180');
+                // Collapse
+                detailsDiv.classList.add('hidden');
+                btnText.textContent = "View Contact Details";
+                btnIcon.classList.remove('rotate-180');
             }
         }
 
-        function collapseMobileFilters() {
-            if (window.innerWidth < 768) {
-                document.getElementById('filter-content').classList.add('hidden');
-                document.getElementById('filter-chevron').classList.remove('rotate-180');
-            }
-        }
-
-        // --- UTILS ---
-        function getSafeApiUrl(url) {
-            const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-            if (!idMatch || !idMatch[1]) return null;
-            return `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:csv`;
-        }
-
-        function cleanSplit(value) {
-            if (!value) return [];
-            return String(value).split(/[;,]+/).map(s => s.trim()).filter(s => s !== "");
-        }
-
-        function getValueByFuzzyKey(row, keyName) {
-            if (!row) return "";
-            const keys = Object.keys(row);
-            const match = keys.find(k => k.toLowerCase().trim() === keyName.toLowerCase().trim());
-            return match ? row[match] : "";
-        }
-
-        function getColorForType(type) {
-            let hash = 0;
-            for (let i = 0; i < type.length; i++) {
-                hash = type.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            return tagColors[Math.abs(hash) % tagColors.length];
-        }
-
-        function logError(msg) {
-            console.error(msg);
-            const el = document.getElementById('debug-log');
-            el.classList.remove('hidden');
-            el.innerHTML += `<div>• ${msg}</div>`;
-        }
-
-        // --- INIT ---
+        // --- INIT & DATA PROCESSING ---
         function init() {
-            if(SHEET_URL.includes("PASTE_YOUR")) {
-                alert("Please edit the HTML file and paste your Google Sheet URL.");
-                return;
-            }
-
+            if(SHEET_URL.includes("PASTE_YOUR")) { alert("Please edit HTML and paste Sheet URL."); return; }
             const safeUrl = getSafeApiUrl(SHEET_URL);
             if (!safeUrl) { logError("Invalid Sheet URL."); return; }
-
             Papa.parse(safeUrl, {
                 download: true, header: true, skipEmptyLines: true,
-                complete: function(results) {
-                    if (results.errors.length > 0) logError("CSV Error: " + results.errors[0].message);
-                    try { processData(results.data); } catch (e) { logError("Processing Error: " + e.message); }
-                },
+                complete: function(results) { processData(results.data); },
                 error: function(err) { logError("Network Error: " + err.message); }
             });
         }
@@ -229,16 +176,26 @@
                 const rawGeo = getValueByFuzzyKey(row, "geography");
                 const rawType = getValueByFuzzyKey(row, "supportType");
                 
+                // New Fields
+                const rawAddress = getValueByFuzzyKey(row, "address");
+                const rawPhone = getValueByFuzzyKey(row, "phoneNumber") || getValueByFuzzyKey(row, "phone");
+
                 if(!rawName && !rawGeo) return null;
+                
                 const geos = cleanSplit(rawGeo);
                 geos.forEach(g => allGeographies.add(g));
-
                 const types = cleanSplit(rawType);
                 types.forEach(t => allSupportTypes.add(t));
 
                 return {
-                    id: index, name: rawName || "Unnamed Org", geography: geos,
-                    supportType: types, criteria: getValueByFuzzyKey(row, "criteria") || ""
+                    id: index, 
+                    name: rawName || "Unnamed Org", 
+                    geography: geos,
+                    supportType: types, 
+                    criteria: getValueByFuzzyKey(row, "criteria") || "",
+                    // Store new fields
+                    address: rawAddress || "",
+                    phone: rawPhone || ""
                 };
             }).filter(item => item !== null);
 
@@ -248,145 +205,7 @@
             document.getElementById('services-listing').classList.remove('hidden');
         }
 
-        // --- FILTERS UI ---
-        function populateFilters() {
-            // Populate Support Type (Checkboxes)
-            const typeMenu = document.getElementById('type-dropdown-menu');
-            typeMenu.innerHTML = '';
-            if(allSupportTypes.size === 0) {
-                typeMenu.innerHTML = '<div class="p-2 text-gray-400">No types found</div>';
-            } else {
-                Array.from(allSupportTypes).sort().forEach(type => {
-                    const label = document.createElement('label');
-                    label.className = "flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg";
-                    label.innerHTML = `
-                        <input type="checkbox" value="${type}" class="type-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
-                        <span class="ml-2 text-gray-700 text-sm">${type}</span>
-                    `;
-                    label.querySelector('input').addEventListener('change', () => {
-                        updateTypeLabel(); applyFilters();
-                    });
-                    typeMenu.appendChild(label);
-                });
-            }
-
-            // Populate Geography (Checkboxes)
-            const geoMenu = document.getElementById('geo-dropdown-menu');
-            geoMenu.innerHTML = '';
-            if(allGeographies.size === 0) {
-                geoMenu.innerHTML = '<div class="p-2 text-gray-400">No locations found</div>';
-            } else {
-                Array.from(allGeographies).sort().forEach(geo => {
-                    const label = document.createElement('label');
-                    label.className = "flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg";
-                    label.innerHTML = `
-                        <input type="checkbox" value="${geo}" class="geo-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
-                        <span class="ml-2 text-gray-700 text-sm">${geo}</span>
-                    `;
-                    label.querySelector('input').addEventListener('change', () => {
-                        updateGeoLabel(); applyFilters();
-                    });
-                    geoMenu.appendChild(label);
-                });
-            }
-        }
-
-        // --- DROPDOWN LOGIC ---
-        function toggleGeoDropdown(e) {
-            e.stopPropagation();
-            const menu = document.getElementById('geo-dropdown-menu');
-            const otherMenu = document.getElementById('type-dropdown-menu');
-            otherMenu.classList.add('hidden'); // Close other
-            menu.classList.toggle('hidden');
-        }
-
-        function toggleTypeDropdown(e) {
-            e.stopPropagation();
-            const menu = document.getElementById('type-dropdown-menu');
-            const otherMenu = document.getElementById('geo-dropdown-menu');
-            otherMenu.classList.add('hidden'); // Close other
-            menu.classList.toggle('hidden');
-        }
-
-        // Close dropdowns on click outside
-        document.addEventListener('click', function(event) {
-            const geoContainer = document.getElementById('geo-dropdown-container');
-            const typeContainer = document.getElementById('type-dropdown-container');
-            
-            if (!geoContainer.contains(event.target)) document.getElementById('geo-dropdown-menu').classList.add('hidden');
-            if (!typeContainer.contains(event.target)) document.getElementById('type-dropdown-menu').classList.add('hidden');
-        });
-
-        // --- LABEL UPDATERS ---
-        function updateGeoLabel() {
-            const checkboxes = document.querySelectorAll('.geo-checkbox:checked');
-            const labelSpan = document.getElementById('geo-selected-text');
-            if (checkboxes.length === 0) {
-                labelSpan.textContent = "All Geographies";
-                labelSpan.className = "truncate text-gray-500";
-            } else {
-                labelSpan.textContent = `${checkboxes.length} Selected`;
-                labelSpan.className = "truncate text-gray-800 font-medium";
-            }
-        }
-
-        function updateTypeLabel() {
-            const checkboxes = document.querySelectorAll('.type-checkbox:checked');
-            const labelSpan = document.getElementById('type-selected-text');
-            if (checkboxes.length === 0) {
-                labelSpan.textContent = "All Support Types";
-                labelSpan.className = "truncate text-gray-500";
-            } else {
-                labelSpan.textContent = `${checkboxes.length} Selected`;
-                labelSpan.className = "truncate text-gray-800 font-medium";
-            }
-        }
-
-        function updateMobileStatus(count) {
-            const statusText = document.getElementById('filter-status-text');
-            if (count > 0) {
-                statusText.innerHTML = `<span class="text-primary font-bold">${count} active filter(s)</span> - Tap to edit`;
-            } else {
-                statusText.innerText = "Tap to expand filters";
-            }
-        }
-
-        // --- FILTERING ---
-        function applyFilters() {
-            const searchText = document.getElementById('filter-name').value.toLowerCase().trim();
-            const selectedGeos = Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(cb => cb.value);
-            const selectedTypes = Array.from(document.querySelectorAll('.type-checkbox:checked')).map(cb => cb.value);
-
-            let activeFilters = 0;
-            if(searchText) activeFilters++;
-            if(selectedGeos.length > 0) activeFilters++;
-            if(selectedTypes.length > 0) activeFilters++;
-            updateMobileStatus(activeFilters);
-
-            const filtered = allServices.filter(item => {
-                const matchSearch = !searchText || item.name.toLowerCase().includes(searchText) || item.criteria.toLowerCase().includes(searchText);
-                
-                // OR Logic: Does item have ANY of the selected locations/types?
-                const matchGeo = selectedGeos.length === 0 || item.geography.some(g => selectedGeos.includes(g));
-                const matchType = selectedTypes.length === 0 || item.supportType.some(t => selectedTypes.includes(t));
-
-                return matchSearch && matchGeo && matchType;
-            });
-
-            renderServices(filtered);
-        }
-
-        function clearFilters() {
-            document.getElementById('filter-name').value = '';
-            
-            document.querySelectorAll('.geo-checkbox').forEach(cb => cb.checked = false);
-            document.querySelectorAll('.type-checkbox').forEach(cb => cb.checked = false);
-            
-            updateGeoLabel();
-            updateTypeLabel();
-            applyFilters();
-        }
-
+        // --- RENDER LOGIC (Updated for Card Expansion) ---
         function renderServices(list) {
             const container = document.getElementById('services-listing');
             container.innerHTML = '';
@@ -396,33 +215,148 @@
                 container.classList.add('hidden');
                 return;
             }
-            
             document.getElementById('no-results').classList.add('hidden');
             container.classList.remove('hidden');
 
             list.slice(0, 100).forEach(item => {
-                const badges = item.supportType.map(t => {
-                    const colorClass = getColorForType(t);
-                    return `<span class="px-2.5 py-1 ${colorClass} text-xs font-semibold rounded-full border bg-opacity-50 whitespace-nowrap">${t}</span>`;
-                }).join('');
-
+                const badges = item.supportType.map(t => `<span class="px-2.5 py-1 ${getColorForType(t)} text-xs font-semibold rounded-full border bg-opacity-50 whitespace-nowrap">${t}</span>`).join('');
                 const geoText = item.geography.join(', ');
+
+                // Build Google Maps Link
+                const mapLink = item.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}` : '#';
+                const displayAddress = item.address || "No address provided";
+                const displayPhone = item.phone || "No phone provided";
+
                 const card = `
-                    <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full">
+                    <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
                         <div class="mb-3">
-                            <h3 class="font-bold text-lg text-gray-900 leading-snug mb-1">${item.name}</h3>
+                            <h3 class="font-bold text-lg text-gray-900 leading-snug mb-1 group-hover:text-primary transition-colors">${item.name}</h3>
                             <div class="text-xs text-gray-500 flex items-start gap-1">
                                 <svg class="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                 <span>${geoText}</span>
                             </div>
                         </div>
+
                         <div class="flex flex-wrap gap-2 mb-3">${badges}</div>
-                        <div class="mt-auto pt-3 border-t border-gray-50">
-                            <p class="text-sm text-gray-600 leading-relaxed line-clamp-4">${item.criteria}</p>
+                        
+                        <div class="mb-4 text-sm text-gray-600 leading-relaxed line-clamp-3">
+                            ${item.criteria}
                         </div>
+
+                        <div class="mt-auto"></div>
+
+                        <div id="details-${item.id}" class="hidden border-t border-gray-100 pt-4 mt-2 mb-2 bg-gray-50 -mx-5 px-5 pb-4 inner-shadow">
+                            <div class="space-y-3 text-sm">
+                                <div>
+                                    <p class="text-xs font-bold text-gray-500 uppercase mb-1">Phone</p>
+                                    ${item.phone ? 
+                                        `<a href="tel:${item.phone}" class="flex items-center text-gray-800 font-medium hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                            ${item.phone}
+                                        </a>` : 
+                                        `<span class="text-gray-400 italic">Not available</span>`
+                                    }
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-gray-500 uppercase mb-1">Address</p>
+                                    ${item.address ? 
+                                        `<a href="${mapLink}" target="_blank" class="flex items-start text-gray-800 font-medium hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4 mr-2 mt-0.5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                            <span>${item.address}</span>
+                                        </a>` : 
+                                        `<span class="text-gray-400 italic">Not available</span>`
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="toggleCard(${item.id})" class="w-full py-2.5 px-4 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 group-hover:border-primary/50">
+                            <span id="btn-text-${item.id}">View Contact Details</span>
+                            <svg id="btn-icon-${item.id}" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
                     </div>`;
                 container.insertAdjacentHTML('beforeend', card);
             });
+        }
+
+        // --- UTILS & HELPERS ---
+        function getSafeApiUrl(url) {
+            const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!idMatch || !idMatch[1]) return null;
+            return `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:csv`;
+        }
+        function cleanSplit(value) { if (!value) return []; return String(value).split(/[;,]+/).map(s => s.trim()).filter(s => s !== ""); }
+        function getValueByFuzzyKey(row, keyName) {
+            if (!row) return "";
+            const keys = Object.keys(row);
+            const match = keys.find(k => k.toLowerCase().replace(/[^a-z]/g, "") === keyName.toLowerCase().replace(/[^a-z]/g, ""));
+            return match ? row[match] : "";
+        }
+        function getColorForType(type) {
+            let hash = 0; for (let i = 0; i < type.length; i++) hash = type.charCodeAt(i) + ((hash << 5) - hash);
+            return tagColors[Math.abs(hash) % tagColors.length];
+        }
+        function logError(msg) { console.error(msg); const el = document.getElementById('debug-log'); el.classList.remove('hidden'); el.innerHTML += `<div>• ${msg}</div>`; }
+        
+        // --- FILTERS & MOBILE UI ---
+        function toggleMobileFilters() { if (window.innerWidth >= 768) return; const c = document.getElementById('filter-content'); const i = document.getElementById('filter-chevron'); if (c.classList.contains('hidden')) { c.classList.remove('hidden'); i.classList.add('rotate-180'); } else { c.classList.add('hidden'); i.classList.remove('rotate-180'); } }
+        function collapseMobileFilters() { if (window.innerWidth < 768) { document.getElementById('filter-content').classList.add('hidden'); document.getElementById('filter-chevron').classList.remove('rotate-180'); } }
+        
+        function populateFilters() {
+            // Helper to populate generic checkbox menu
+            const fillMenu = (set, menuId, checkClass, updateFn) => {
+                const menu = document.getElementById(menuId); menu.innerHTML = '';
+                if(set.size === 0) { menu.innerHTML = '<div class="p-2 text-gray-400">No options found</div>'; return; }
+                Array.from(set).sort().forEach(val => {
+                    const label = document.createElement('label'); label.className = "flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg";
+                    label.innerHTML = `<input type="checkbox" value="${val}" class="${checkClass} w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"><span class="ml-2 text-gray-700 text-sm">${val}</span>`;
+                    label.querySelector('input').addEventListener('change', () => { updateFn(); applyFilters(); });
+                    menu.appendChild(label);
+                });
+            };
+            fillMenu(allGeographies, 'geo-dropdown-menu', 'geo-checkbox', updateGeoLabel);
+            fillMenu(allSupportTypes, 'type-dropdown-menu', 'type-checkbox', updateTypeLabel);
+        }
+
+        function toggleGeoDropdown(e) { e.stopPropagation(); document.getElementById('type-dropdown-menu').classList.add('hidden'); document.getElementById('geo-dropdown-menu').classList.toggle('hidden'); }
+        function toggleTypeDropdown(e) { e.stopPropagation(); document.getElementById('geo-dropdown-menu').classList.add('hidden'); document.getElementById('type-dropdown-menu').classList.toggle('hidden'); }
+        
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('geo-dropdown-container').contains(e.target)) document.getElementById('geo-dropdown-menu').classList.add('hidden');
+            if (!document.getElementById('type-dropdown-container').contains(e.target)) document.getElementById('type-dropdown-menu').classList.add('hidden');
+        });
+
+        function updateGeoLabel() { updateLabel('geo-checkbox', 'geo-selected-text', 'Geographies'); }
+        function updateTypeLabel() { updateLabel('type-checkbox', 'type-selected-text', 'Support Types'); }
+        function updateLabel(cls, textId, defaultText) {
+            const count = document.querySelectorAll(`.${cls}:checked`).length;
+            const span = document.getElementById(textId);
+            if (count === 0) { span.textContent = `All ${defaultText}`; span.className = "truncate text-gray-500"; }
+            else { span.textContent = `${count} Selected`; span.className = "truncate text-gray-800 font-medium"; }
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('filter-name').value.toLowerCase().trim();
+            const geos = Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(cb => cb.value);
+            const types = Array.from(document.querySelectorAll('.type-checkbox:checked')).map(cb => cb.value);
+            
+            let active = 0; if(search) active++; if(geos.length) active++; if(types.length) active++;
+            const st = document.getElementById('filter-status-text');
+            st.innerHTML = active > 0 ? `<span class="text-primary font-bold">${active} active filter(s)</span> - Tap to edit` : "Tap to expand filters";
+
+            const filtered = allServices.filter(item => {
+                const mSearch = !search || item.name.toLowerCase().includes(search) || item.criteria.toLowerCase().includes(search);
+                const mGeo = geos.length === 0 || item.geography.some(g => geos.includes(g));
+                const mType = types.length === 0 || item.supportType.some(t => types.includes(t));
+                return mSearch && mGeo && mType;
+            });
+            renderServices(filtered);
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-name').value = '';
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            updateGeoLabel(); updateTypeLabel(); applyFilters();
         }
 
         document.addEventListener('DOMContentLoaded', init);
