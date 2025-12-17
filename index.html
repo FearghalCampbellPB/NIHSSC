@@ -59,7 +59,7 @@
                         <p class="text-xs text-gray-500" id="filter-status-text">Tap to expand filters</p>
                     </div>
                 </div>
-                <button id="filter-chevron" class="transform transition-transform duration-200 md:rotate-180">
+                <button id="filter-chevron" class="transform transition-transform duration-300">
                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
             </div>
@@ -135,7 +135,7 @@
             "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200", "bg-indigo-100 text-indigo-800 border-indigo-200",
         ];
 
-        // --- EXPAND LOGIC ---
+        // --- EXPAND CARD LOGIC ---
         function toggleCard(id) {
             const details = document.getElementById(`details-${id}`);
             const text = document.getElementById(`btn-text-${id}`);
@@ -156,6 +156,9 @@
 
         // --- DATA LOGIC ---
         function init() {
+            // Check desktop state on load
+            initializeHeaderState();
+
             if(SHEET_URL.includes("PASTE_YOUR")) { alert("Please edit HTML and paste Sheet URL."); return; }
             const safeUrl = getSafeApiUrl(SHEET_URL);
             if (!safeUrl) { logError("Invalid Sheet URL."); return; }
@@ -216,7 +219,6 @@
 
                 const card = `
                     <div class="bg-white rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col h-full group overflow-hidden">
-                        
                         <div class="p-5 flex flex-col h-full">
                             <div class="mb-3">
                                 <h3 class="font-bold text-lg text-gray-900 leading-snug mb-1 group-hover:text-primary transition-colors">${item.name}</h3>
@@ -229,7 +231,6 @@
                             <div class="mb-4 text-sm text-gray-600 leading-relaxed line-clamp-3">${item.criteria}</div>
                             <div class="mt-auto"></div>
                         </div>
-
                         <div id="details-${item.id}" class="hidden bg-gray-50 border-t border-gray-100 p-5 pt-4 animation-fade-in">
                             <div class="space-y-4 text-sm">
                                 <div>
@@ -254,7 +255,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div onclick="toggleCard(${item.id})" class="bg-gray-50 hover:bg-indigo-50 border-t border-gray-100 p-3 text-center cursor-pointer transition-colors group/btn">
                             <span class="text-sm font-semibold text-primary flex items-center justify-center gap-2">
                                 <span id="btn-text-${item.id}">View Contact Details</span>
@@ -272,15 +272,67 @@
         function getValueByFuzzyKey(row, key) { if(!row)return ""; const k=Object.keys(row).find(k=>k.toLowerCase().replace(/[^a-z]/g,"")===key.toLowerCase().replace(/[^a-z]/g,"")); return k?row[k]:""; }
         function getColorForType(t) { let h=0;for(let i=0;i<t.length;i++)h=t.charCodeAt(i)+((h<<5)-h); return tagColors[Math.abs(h)%tagColors.length]; }
         function logError(m) { document.getElementById('debug-log').classList.remove('hidden'); document.getElementById('debug-log').innerHTML+=`<div>• ${m}</div>`; }
-        
-        // --- FILTERS ---
-        function toggleFilters(){ 
-            const c=document.getElementById('filter-content'), i=document.getElementById('filter-chevron'); 
-            // On desktop, the hidden state is managed by 'md:block'. We need to be forceful.
-            if(c.classList.contains('hidden')){ c.classList.remove('hidden'); c.classList.add('block'); i.classList.add('rotate-180'); }
-            else { c.classList.add('hidden'); c.classList.remove('block'); c.classList.remove('md:block'); i.classList.remove('rotate-180'); }
+        function countActiveFilters() {
+            const s=document.getElementById('filter-name').value.trim();
+            const g=document.querySelectorAll('.geo-checkbox:checked').length;
+            const t=document.querySelectorAll('.type-checkbox:checked').length;
+            return (s?1:0) + g + t;
         }
-        
+
+        // --- FILTER TOGGLE LOGIC ---
+        function initializeHeaderState() {
+            // Check if desktop (which starts open) or mobile (starts hidden)
+            // On load, content has "hidden md:block".
+            // If md:block is active (desktop), the chevron should be Up and text "Close".
+            const isDesktop = window.innerWidth >= 768;
+            const text = document.getElementById('filter-status-text');
+            const chevron = document.getElementById('filter-chevron');
+
+            if (isDesktop) {
+                text.textContent = "Tap to close filters";
+                chevron.classList.add('rotate-180');
+            } else {
+                text.textContent = "Tap to expand filters";
+                chevron.classList.remove('rotate-180');
+            }
+        }
+
+        function toggleFilters() {
+            const content = document.getElementById('filter-content');
+            const chevron = document.getElementById('filter-chevron');
+            const text = document.getElementById('filter-status-text');
+
+            // Logic: Is it currently hidden?
+            const isHidden = content.classList.contains('hidden');
+            
+            if (isHidden) {
+                // OPEN IT
+                content.classList.remove('hidden');
+                // Ensure it's visible even if md:block was interfered with
+                content.classList.add('block');
+                
+                chevron.classList.add('rotate-180');
+                text.textContent = "Tap to close filters";
+            } else {
+                // CLOSE IT
+                content.classList.add('hidden');
+                content.classList.remove('block');
+                // We must remove md:block to force it to hide on desktop
+                content.classList.remove('md:block'); 
+                
+                chevron.classList.remove('rotate-180');
+                
+                // Show active count summary when closed
+                const active = countActiveFilters();
+                if (active > 0) {
+                    text.innerHTML = `<span class="text-primary font-bold">${active} active filter(s)</span> - Tap to expand`;
+                } else {
+                    text.textContent = "Tap to expand filters";
+                }
+            }
+        }
+
+        // --- FILTERS LOGIC ---
         function populateFilters(){
             const fill=(s,id,cls,upd)=>{const m=document.getElementById(id);m.innerHTML=''; if(s.size===0)m.innerHTML='<div class="p-2 text-gray-400">Empty</div>'; else Array.from(s).sort().forEach(v=>{const l=document.createElement('label');l.className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg";l.innerHTML=`<input type="checkbox" value="${v}" class="${cls} w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"><span class="ml-2 text-gray-700 text-sm">${v}</span>`;l.querySelector('input').addEventListener('change',()=>{upd();applyFilters();});m.appendChild(l);});};
             fill(allGeographies,'geo-dropdown-menu','geo-checkbox',updateGeoLabel); fill(allSupportTypes,'type-dropdown-menu','type-checkbox',updateTypeLabel);
@@ -290,11 +342,25 @@
         document.addEventListener('click',(e)=>{ if(!document.getElementById('geo-dropdown-container').contains(e.target))document.getElementById('geo-dropdown-menu').classList.add('hidden'); if(!document.getElementById('type-dropdown-container').contains(e.target))document.getElementById('type-dropdown-menu').classList.add('hidden'); });
         function updateGeoLabel(){const c=document.querySelectorAll('.geo-checkbox:checked').length; document.getElementById('geo-selected-text').textContent=c?`${c} Selected`:"All Geographies"; document.getElementById('geo-selected-text').className=c?"truncate text-gray-800 font-medium":"truncate text-gray-500";}
         function updateTypeLabel(){const c=document.querySelectorAll('.type-checkbox:checked').length; document.getElementById('type-selected-text').textContent=c?`${c} Selected`:"All Support Types"; document.getElementById('type-selected-text').className=c?"truncate text-gray-800 font-medium":"truncate text-gray-500";}
+        
         function applyFilters(){
             const s=document.getElementById('filter-name').value.toLowerCase().trim(), g=Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(c=>c.value), t=Array.from(document.querySelectorAll('.type-checkbox:checked')).map(c=>c.value);
-            const a=(s?1:0)+(g.length?1:0)+(t.length?1:0); document.getElementById('filter-status-text').innerHTML=a?`<span class="text-primary font-bold">${a} active filter(s)</span> - Tap to edit`:"Tap to expand filters";
+            // Apply filtering
             renderServices(allServices.filter(i=>{const mS=!s||i.name.toLowerCase().includes(s)||i.criteria.toLowerCase().includes(s); const mG=!g.length||i.geography.some(v=>g.includes(v)); const mT=!t.length||i.supportType.some(v=>t.includes(v)); return mS&&mG&&mT;}));
+            
+            // Only update status text if the menu is CLOSED. If Open, keep saying "Tap to close".
+            const content = document.getElementById('filter-content');
+            if (content.classList.contains('hidden')) {
+                const active = countActiveFilters();
+                const text = document.getElementById('filter-status-text');
+                if (active > 0) {
+                    text.innerHTML = `<span class="text-primary font-bold">${active} active filter(s)</span> - Tap to expand`;
+                } else {
+                    text.textContent = "Tap to expand filters";
+                }
+            }
         }
+        
         function clearFilters(){document.getElementById('filter-name').value=''; document.querySelectorAll('input[type="checkbox"]').forEach(c=>c.checked=false); updateGeoLabel(); updateTypeLabel(); applyFilters();}
         document.addEventListener('DOMContentLoaded',init); document.getElementById('filter-name').addEventListener('input',applyFilters);
     </script>
