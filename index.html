@@ -37,7 +37,7 @@
         .details-enter { animation: slideDown 0.3s ease-out forwards; }
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); max-height: 0; }
-            to { opacity: 1; transform: translateY(0); max-height: 1500px; } /* Increased max-height for long summaries */
+            to { opacity: 1; transform: translateY(0); max-height: 1500px; }
         }
     </style>
 </head>
@@ -46,7 +46,9 @@
     <header class="gradient-bg text-white py-6 md:py-8 shadow-lg">
         <div class="container mx-auto px-4 text-center">
             <h1 class="text-2xl md:text-5xl font-extrabold mb-2 md:mb-3 leading-tight">Social Support Directory</h1>
-            <p class="text-sm md:text-lg opacity-90 max-w-2xl mx-auto font-light">Find vital support services in your local community.</p>
+            <p class="text-sm md:text-lg opacity-90 max-w-2xl mx-auto font-light">
+                Find vital support services in your local community. Detail provided by the Southern Health and Social Care Trust #teamSHSCT
+            </p>
         </div>
     </header>
 
@@ -54,22 +56,22 @@
         
         <section class="bg-white rounded-xl card-shadow mb-6 sticky top-2 z-30 border border-gray-100 transition-all duration-300">
             
-            <div class="flex justify-between items-center p-4 md:p-6 cursor-pointer md:cursor-default" onclick="toggleMobileFilters()">
+            <div class="flex justify-between items-center p-4 md:p-6 cursor-pointer hover:bg-gray-50 transition-colors rounded-t-xl" onclick="toggleFilters()">
                 <div class="flex items-center gap-2">
                     <div class="p-2 bg-indigo-50 rounded-lg text-primary">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                     </div>
                     <div>
                         <h2 class="font-bold text-gray-800 text-lg">Find Services</h2>
-                        <p class="text-xs text-gray-500 md:hidden" id="filter-status-text">Tap to expand filters</p>
+                        <p class="text-xs text-gray-500" id="filter-status-text">Tap to toggle filters</p>
                     </div>
                 </div>
-                <button id="filter-chevron" class="md:hidden transform transition-transform duration-200">
-                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <button id="filter-chevron" class="transform transition-transform duration-200 text-gray-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
             </div>
 
-            <div id="filter-content" class="hidden md:block px-4 pb-4 md:px-6 md:pb-6 border-t md:border-t-0 border-gray-100">
+            <div id="filter-content" class="hidden px-4 pb-4 md:px-6 md:pb-6 border-t md:border-t-0 border-gray-100">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
                     
                     <div class="relative">
@@ -98,7 +100,7 @@
 
                 <div class="mt-6 flex flex-col md:flex-row justify-end gap-3 md:gap-4">
                     <button onclick="clearFilters()" class="order-2 md:order-1 w-full md:w-auto px-6 h-12 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Clear Filters</button>
-                    <button onclick="applyFilters(); collapseMobileFilters();" class="order-1 md:order-2 w-full md:w-auto px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">Show Results</button>
+                    <button onclick="applyFilters(); collapseFiltersOnMobile();" class="order-1 md:order-2 w-full md:w-auto px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">Show Results</button>
                 </div>
             </div>
         </section>
@@ -130,7 +132,7 @@
         // ==========================================
         // CONFIGURATION: PASTE YOUR SHEET URL HERE
         // ==========================================
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/1STWmcZTlcINykC6jvz9ctQ04Otsguh95ZOiE_0Vf_R4/edit?gid=0#gid=0"; 
+        const SHEET_URL = "PASTE_YOUR_GOOGLE_SHEET_URL_HERE"; 
         // ==========================================
 
         let allServices = [];
@@ -165,12 +167,23 @@
             }
         }
 
-        // --- DATA FETCHING & PROCESSING ---
+        // --- INITIALIZATION ---
         function init() {
-            if(SHEET_URL.includes("PASTE_YOUR")) { alert("Please edit HTML and paste Sheet URL."); return; }
+            // Logic: If on Desktop (width > 768), open filters by default
+            if(window.innerWidth >= 768) {
+                toggleFilters();
+            }
+
+            if(SHEET_URL.includes("PASTE_YOUR")) { 
+                alert("Please edit HTML and paste Sheet URL."); 
+                return; 
+            }
             
             const safeUrl = getSafeApiUrl(SHEET_URL);
-            if (!safeUrl) { logError("Invalid Sheet URL."); return; }
+            if (!safeUrl) { 
+                logError("Invalid Sheet URL."); 
+                return; 
+            }
             
             Papa.parse(safeUrl, {
                 download: true, 
@@ -181,11 +194,12 @@
             });
         }
 
+        // --- DATA PROCESSING ---
         function processData(data) {
             allServices = data.map((row, index) => {
                 if (Object.keys(row).length === 0) return null;
                 
-                // Fuzzy Key Matching to handle Capitalization differences
+                // Fuzzy Key Matching to handle Capitalization differences in Sheet Headers
                 const rawName = getValueByFuzzyKey(row, "name");
                 const rawTheme = getValueByFuzzyKey(row, "theme"); 
                 const rawGeo = getValueByFuzzyKey(row, "geography");
@@ -198,9 +212,12 @@
 
                 if(!rawName && !rawGeo) return null;
                 
-                // Process Arrays
-                const geos = cleanSplit(rawGeo); geos.forEach(g => allGeographies.add(g));
-                const types = cleanSplit(rawType); types.forEach(t => allSupportTypes.add(t));
+                // Process Comma-Separated Arrays
+                const geos = cleanSplit(rawGeo); 
+                geos.forEach(g => allGeographies.add(g));
+                
+                const types = cleanSplit(rawType); 
+                types.forEach(t => allSupportTypes.add(t));
 
                 return {
                     id: index, 
@@ -219,11 +236,12 @@
             populateFilters();
             renderServices(allServices);
             
+            // Hide Loader, Show Content
             document.getElementById('loading-indicator').classList.add('hidden');
             document.getElementById('services-listing').classList.remove('hidden');
         }
 
-        // --- RENDERING CARDS ---
+        // --- RENDERING UI ---
         function renderServices(list) {
             const container = document.getElementById('services-listing');
             container.innerHTML = '';
@@ -236,6 +254,7 @@
             document.getElementById('no-results').classList.add('hidden');
             container.classList.remove('hidden');
 
+            // Render first 100 items (Lazy loading simulation)
             list.slice(0, 100).forEach(item => {
                 const badges = item.supportType.map(t => `<span class="px-2.5 py-1 ${getColorForType(t)} text-xs font-semibold rounded-full border bg-opacity-50 whitespace-nowrap">${t}</span>`).join('');
                 const geoText = item.geography.join(', ');
@@ -256,7 +275,6 @@
                             </div>
 
                             <div class="flex flex-wrap gap-2 mb-2">${badges}</div>
-                            
                             <div class="mt-auto"></div>
                         </div>
 
@@ -277,7 +295,7 @@
 
                                 ${item.criteria ? `
                                 <div>
-                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Eligibility Criteria</p>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Eligibility Criteria & Cost</p>
                                     <p class="text-gray-700 leading-relaxed">${item.criteria}</p>
                                 </div>` : ''}
 
@@ -315,51 +333,63 @@
             });
         }
 
-        // --- UTILITIES & HELPERS ---
+        // --- HELPER FUNCTIONS (EXPANDED FOR READABILITY) ---
+        
+        // 1. Convert Sheet Link to API Link
         function getSafeApiUrl(url) { 
             const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/); 
             return m ? `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv` : null; 
         }
         
+        // 2. Split Comma Separated Strings
         function cleanSplit(v) { 
             return v ? String(v).split(/[;,]+/).map(s=>s.trim()).filter(s=>s!=="") : []; 
         }
         
+        // 3. Find column value ignoring capitalization
         function getValueByFuzzyKey(row, key) { 
             if(!row) return ""; 
             const k = Object.keys(row).find(k=>k.toLowerCase().replace(/[^a-z]/g,"") === key.toLowerCase().replace(/[^a-z]/g,"")); 
             return k ? row[k] : ""; 
         }
         
+        // 4. Generate Color for Tag
         function getColorForType(t) { 
             let h=0; 
             for(let i=0; i<t.length; i++) h = t.charCodeAt(i) + ((h<<5)-h); 
             return tagColors[Math.abs(h)%tagColors.length]; 
         }
         
+        // 5. Error Logging
         function logError(m) { 
             document.getElementById('debug-log').classList.remove('hidden'); 
             document.getElementById('debug-log').innerHTML += `<div>• ${m}</div>`; 
         }
         
-        // --- FILTERS & MOBILE UI LOGIC ---
-        function toggleMobileFilters(){ 
-            if(window.innerWidth >= 768) return; 
+        // --- FILTER UI TOGGLING ---
+        function toggleFilters() { 
             const c = document.getElementById('filter-content');
             const i = document.getElementById('filter-chevron'); 
-            c.classList.toggle('hidden'); 
-            i.classList.toggle('rotate-180'); 
+            
+            if(c.classList.contains('hidden')) {
+                c.classList.remove('hidden'); 
+                i.classList.add('rotate-180');
+            } else {
+                c.classList.add('hidden'); 
+                i.classList.remove('rotate-180');
+            }
         }
         
-        function collapseMobileFilters(){ 
+        function collapseFiltersOnMobile() { 
             if(window.innerWidth < 768){ 
                 document.getElementById('filter-content').classList.add('hidden'); 
                 document.getElementById('filter-chevron').classList.remove('rotate-180'); 
             } 
         }
         
-        // Generic function to populate checkbox menus
+        // --- POPULATE FILTER MENUS ---
         function populateFilters(){
+            // Helper to fill dropdowns
             const fill = (set, id, cls, upd) => {
                 const m = document.getElementById(id);
                 m.innerHTML = ''; 
@@ -379,20 +409,18 @@
             fill(allSupportTypes, 'type-dropdown-menu', 'type-checkbox', updateTypeLabel);
         }
 
-        // Toggle dropdown visibility
+        // Dropdown Click Handlers
         function toggleGeoDropdown(e){
             e.stopPropagation(); 
             document.getElementById('type-dropdown-menu').classList.add('hidden'); 
             document.getElementById('geo-dropdown-menu').classList.toggle('hidden');
         }
-        
         function toggleTypeDropdown(e){
             e.stopPropagation(); 
             document.getElementById('geo-dropdown-menu').classList.add('hidden'); 
             document.getElementById('type-dropdown-menu').classList.toggle('hidden');
         }
-        
-        // Close dropdowns when clicking outside
+        // Click Outside to Close
         document.addEventListener('click', (e) => { 
             if(!document.getElementById('geo-dropdown-container').contains(e.target)) 
                 document.getElementById('geo-dropdown-menu').classList.add('hidden'); 
@@ -400,14 +428,13 @@
                 document.getElementById('type-dropdown-menu').classList.add('hidden'); 
         });
 
-        // Update Button Labels based on selection
+        // Label Updates
         function updateGeoLabel(){
             const c = document.querySelectorAll('.geo-checkbox:checked').length; 
             const el = document.getElementById('geo-selected-text');
             el.textContent = c ? `${c} Selected` : "All Geographies"; 
             el.className = c ? "truncate text-gray-800 font-medium" : "truncate text-gray-500";
         }
-        
         function updateTypeLabel(){
             const c = document.querySelectorAll('.type-checkbox:checked').length; 
             const el = document.getElementById('type-selected-text');
@@ -421,13 +448,13 @@
             const g = Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(c => c.value);
             const t = Array.from(document.querySelectorAll('.type-checkbox:checked')).map(c => c.value);
             
-            // Update Mobile Status Text
+            // Update Text
             const a = (s?1:0) + (g.length?1:0) + (t.length?1:0); 
             document.getElementById('filter-status-text').innerHTML = a ? 
                 `<span class="text-primary font-bold">${a} active filter(s)</span> - Tap to edit` : 
-                "Tap to expand filters";
+                "Tap to toggle filters";
 
-            // Filter the list
+            // Run Filter
             const filtered = allServices.filter(i => {
                 const mS = !s || i.name.toLowerCase().includes(s) || i.criteria.toLowerCase().includes(s) || i.summary.toLowerCase().includes(s); 
                 const mG = !g.length || i.geography.some(v => g.includes(v)); 
