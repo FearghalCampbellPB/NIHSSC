@@ -24,22 +24,21 @@
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); }
         .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        
+        /* Scrollbar styling */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
+        
+        /* Mobile Touch optimizations */
         input, select, button { touch-action: manipulation; }
         
-        /* Details Animation */
+        /* Expand/Collapse Animation */
         .details-enter { animation: slideDown 0.3s ease-out forwards; }
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); max-height: 0; }
-            to { opacity: 1; transform: translateY(0); max-height: 500px; }
+            to { opacity: 1; transform: translateY(0); max-height: 1500px; } /* Increased max-height for long summaries */
         }
-
-        /* Toast Animation */
-        #toast { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease; }
-        .toast-hidden { transform: translate(-50%, 100%) translateY(20px); opacity: 0; }
-        .toast-visible { transform: translate(-50%, 0); opacity: 1; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
@@ -51,40 +50,44 @@
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-4 md:py-10 relative">
+    <main class="flex-grow container mx-auto px-4 py-4 md:py-10">
         
         <section class="bg-white rounded-xl card-shadow mb-6 sticky top-2 z-30 border border-gray-100 transition-all duration-300">
-            <div class="flex justify-between items-center p-4 md:p-6 cursor-pointer hover:bg-gray-50 transition-colors rounded-t-xl" onclick="toggleFilters()">
+            
+            <div class="flex justify-between items-center p-4 md:p-6 cursor-pointer md:cursor-default" onclick="toggleMobileFilters()">
                 <div class="flex items-center gap-2">
                     <div class="p-2 bg-indigo-50 rounded-lg text-primary">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                     </div>
                     <div>
                         <h2 class="font-bold text-gray-800 text-lg">Find Services</h2>
-                        <p class="text-xs text-gray-500" id="filter-status-text">Tap to expand filters</p>
+                        <p class="text-xs text-gray-500 md:hidden" id="filter-status-text">Tap to expand filters</p>
                     </div>
                 </div>
-                <button id="filter-chevron" class="transform transition-transform duration-200 md:rotate-180">
+                <button id="filter-chevron" class="md:hidden transform transition-transform duration-200">
                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
             </div>
 
-            <div id="filter-content" class="hidden md:block px-4 pb-4 md:px-6 md:pb-6 border-t border-gray-100">
+            <div id="filter-content" class="hidden md:block px-4 pb-4 md:px-6 md:pb-6 border-t md:border-t-0 border-gray-100">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                    
                     <div class="relative">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Search</label>
-                        <input type="text" id="filter-name" placeholder="Search name or criteria..." class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm">
+                        <input type="text" id="filter-name" placeholder="Search name, summary or criteria..." class="w-full px-4 h-12 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm">
                     </div>
+
                     <div class="relative group" id="geo-dropdown-container">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Geography</label>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Geography (Multiple)</label>
                         <button onclick="toggleGeoDropdown(event)" class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
                             <span id="geo-selected-text" class="truncate">All Geographies</span>
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         <div id="geo-dropdown-menu" class="hidden absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar p-2"></div>
                     </div>
+
                     <div class="relative group" id="type-dropdown-container">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Support Type</label>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Support Type (Multiple)</label>
                         <button onclick="toggleTypeDropdown(event)" class="w-full px-4 h-12 text-left border border-gray-200 rounded-xl bg-gray-50 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-base shadow-sm flex justify-between items-center text-gray-500">
                             <span id="type-selected-text" class="truncate">All Support Types</span>
                             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -93,16 +96,9 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
-                    <button id="btn-favorites" onclick="toggleFavoritesFilter()" class="w-full md:w-auto px-6 h-12 rounded-xl border-2 border-transparent hover:bg-red-50 text-gray-600 font-semibold transition-all flex items-center justify-center gap-2 group">
-                        <svg class="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                        <span id="fav-btn-text">View Favorites</span>
-                    </button>
-
-                    <div class="flex gap-3 w-full md:w-auto">
-                        <button onclick="clearFilters()" class="flex-1 md:flex-none px-6 h-12 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Clear</button>
-                        <button onclick="applyFilters(); toggleFilters();" class="flex-1 md:flex-none px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">Show Results</button>
-                    </div>
+                <div class="mt-6 flex flex-col md:flex-row justify-end gap-3 md:gap-4">
+                    <button onclick="clearFilters()" class="order-2 md:order-1 w-full md:w-auto px-6 h-12 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Clear Filters</button>
+                    <button onclick="applyFilters(); collapseMobileFilters();" class="order-1 md:order-2 w-full md:w-auto px-8 h-12 rounded-xl font-bold text-white gradient-bg shadow-md hover:shadow-lg transform active:scale-95 transition-all">Show Results</button>
                 </div>
             </div>
         </section>
@@ -124,11 +120,6 @@
         </div>
     </main>
 
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 z-50 toast-hidden">
-        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        <span id="toast-message" class="font-medium text-sm">Saved to favorites</span>
-    </div>
-
     <footer class="bg-white border-t border-gray-200 py-8 mt-auto">
         <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
             <p>© 2023 Social Support Directory.</p>
@@ -137,15 +128,12 @@
 
     <script>
         // ==========================================
-        // CONFIGURATION
+        // CONFIGURATION: PASTE YOUR SHEET URL HERE
         // ==========================================
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/1STWmcZTlcINykC6jvz9ctQ04Otsguh95ZOiE_0Vf_R4/edit?usp=sharing"; 
+        const SHEET_URL = "https://docs.google.com/spreadsheets/d/1STWmcZTlcINykC6jvz9ctQ04Otsguh95ZOiE_0Vf_R4/edit?gid=0#gid=0"; 
         // ==========================================
 
         let allServices = [];
-        let savedIds = new Set();
-        let showFavoritesOnly = false;
-        
         let allGeographies = new Set();
         let allSupportTypes = new Set();
         
@@ -156,38 +144,20 @@
             "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200", "bg-indigo-100 text-indigo-800 border-indigo-200",
         ];
 
-        // --- INIT ---
-        function init() {
-            initializeHeaderState();
-            // Load Saved IDs
-            try {
-                const saved = localStorage.getItem('socialDirectorySaved');
-                if (saved) savedIds = new Set(JSON.parse(saved));
-            } catch(e) { console.error("LS Error", e); }
-
-            if(SHEET_URL.includes("PASTE_YOUR")) { alert("Please edit HTML and paste Sheet URL."); return; }
-            const safeUrl = getSafeApiUrl(SHEET_URL);
-            if (!safeUrl) { logError("Invalid Sheet URL."); return; }
-            
-            Papa.parse(safeUrl, {
-                download: true, header: true, skipEmptyLines: true,
-                complete: function(results) { processData(results.data); },
-                error: function(err) { logError("Network Error: " + err.message); }
-            });
-        }
-
-        // --- TOGGLE CARD (THE MISSING FUNCTION IS HERE NOW) ---
+        // --- EXPAND / COLLAPSE CARD LOGIC ---
         function toggleCard(id) {
             const details = document.getElementById(`details-${id}`);
             const text = document.getElementById(`btn-text-${id}`);
             const chevron = document.getElementById(`btn-icon-${id}`);
             
             if (details.classList.contains('hidden')) {
+                // Open
                 details.classList.remove('hidden');
                 details.classList.add('details-enter');
                 text.textContent = "Close Details";
                 chevron.classList.add('rotate-180');
             } else {
+                // Close
                 details.classList.add('hidden');
                 details.classList.remove('details-enter');
                 text.textContent = "View Contact Details";
@@ -195,65 +165,52 @@
             }
         }
 
-        // --- HEART & TOAST LOGIC ---
-        function toggleHeart(e, id) {
-            e.stopPropagation(); 
-            const btn = document.getElementById(`heart-btn-${id}`);
-            const icon = document.getElementById(`heart-icon-${id}`);
+        // --- DATA FETCHING & PROCESSING ---
+        function init() {
+            if(SHEET_URL.includes("PASTE_YOUR")) { alert("Please edit HTML and paste Sheet URL."); return; }
             
-            if (savedIds.has(id)) {
-                savedIds.delete(id);
-                showToast("Removed from favorites");
-                icon.setAttribute("fill", "none"); icon.classList.remove("text-red-500"); icon.classList.add("text-gray-300"); btn.classList.remove("bg-red-50");
-            } else {
-                savedIds.add(id);
-                showToast("Saved to favorites");
-                icon.setAttribute("fill", "currentColor"); icon.classList.remove("text-gray-300"); icon.classList.add("text-red-500"); btn.classList.add("bg-red-50");
-            }
-            localStorage.setItem('socialDirectorySaved', JSON.stringify([...savedIds]));
-            if(showFavoritesOnly) applyFilters();
+            const safeUrl = getSafeApiUrl(SHEET_URL);
+            if (!safeUrl) { logError("Invalid Sheet URL."); return; }
+            
+            Papa.parse(safeUrl, {
+                download: true, 
+                header: true, 
+                skipEmptyLines: true,
+                complete: function(results) { processData(results.data); },
+                error: function(err) { logError("Network Error: " + err.message); }
+            });
         }
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').textContent = msg;
-            toast.classList.remove('toast-hidden'); toast.classList.add('toast-visible');
-            setTimeout(() => { toast.classList.remove('toast-visible'); toast.classList.add('toast-hidden'); }, 2000);
-        }
-
-        function toggleFavoritesFilter() {
-            showFavoritesOnly = !showFavoritesOnly;
-            const btn = document.getElementById('btn-favorites');
-            const txt = document.getElementById('fav-btn-text');
-            if (showFavoritesOnly) {
-                btn.classList.add('bg-red-50', 'border-red-200'); btn.querySelector('svg').classList.add('text-red-500', 'fill-current'); txt.textContent = "Show All Items";
-            } else {
-                btn.classList.remove('bg-red-50', 'border-red-200'); btn.querySelector('svg').classList.remove('text-red-500', 'fill-current'); txt.textContent = "View Favorites";
-            }
-            applyFilters();
-        }
-
-        // --- DATA PROCESSING ---
         function processData(data) {
             allServices = data.map((row, index) => {
                 if (Object.keys(row).length === 0) return null;
+                
+                // Fuzzy Key Matching to handle Capitalization differences
                 const rawName = getValueByFuzzyKey(row, "name");
+                const rawTheme = getValueByFuzzyKey(row, "theme"); 
                 const rawGeo = getValueByFuzzyKey(row, "geography");
                 const rawType = getValueByFuzzyKey(row, "supportType");
                 const rawAddress = getValueByFuzzyKey(row, "address");
                 const rawPhone = getValueByFuzzyKey(row, "phoneNumber") || getValueByFuzzyKey(row, "phone");
+                const rawTarget = getValueByFuzzyKey(row, "targetGroup"); 
+                const rawCriteria = getValueByFuzzyKey(row, "criteria");
+                const rawSummary = getValueByFuzzyKey(row, "summary"); 
 
                 if(!rawName && !rawGeo) return null;
                 
+                // Process Arrays
                 const geos = cleanSplit(rawGeo); geos.forEach(g => allGeographies.add(g));
                 const types = cleanSplit(rawType); types.forEach(t => allSupportTypes.add(t));
 
                 return {
                     id: index, 
                     name: rawName || "Unnamed Org", 
+                    theme: rawTheme || "",
                     geography: geos,
                     supportType: types, 
-                    criteria: getValueByFuzzyKey(row, "criteria") || "",
+                    targetGroup: rawTarget || "",
+                    criteria: rawCriteria || "",
+                    summary: rawSummary || "", 
                     address: rawAddress || "",
                     phone: rawPhone || ""
                 };
@@ -261,11 +218,12 @@
 
             populateFilters();
             renderServices(allServices);
+            
             document.getElementById('loading-indicator').classList.add('hidden');
             document.getElementById('services-listing').classList.remove('hidden');
         }
 
-        // --- RENDER ---
+        // --- RENDERING CARDS ---
         function renderServices(list) {
             const container = document.getElementById('services-listing');
             container.innerHTML = '';
@@ -279,33 +237,52 @@
             container.classList.remove('hidden');
 
             list.slice(0, 100).forEach(item => {
-                const isSaved = savedIds.has(item.id);
                 const badges = item.supportType.map(t => `<span class="px-2.5 py-1 ${getColorForType(t)} text-xs font-semibold rounded-full border bg-opacity-50 whitespace-nowrap">${t}</span>`).join('');
                 const geoText = item.geography.join(', ');
                 const mapLink = item.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}` : '#';
 
                 const card = `
-                    <div class="bg-white rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col h-full group overflow-hidden relative">
+                    <div class="bg-white rounded-2xl card-shadow border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col h-full group overflow-hidden">
+                        
                         <div class="p-5 flex flex-col h-full">
-                            <div class="flex justify-between items-start gap-3 mb-3">
-                                <div>
-                                    <h3 class="font-bold text-lg text-gray-900 leading-snug mb-1 group-hover:text-primary transition-colors">${item.name}</h3>
-                                    <div class="text-xs text-gray-500 flex items-start gap-1">
-                                        <svg class="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                        <span>${geoText}</span>
-                                    </div>
+                            <div class="mb-4">
+                                <h3 class="font-bold text-lg text-gray-900 leading-snug mb-0.5 group-hover:text-primary transition-colors">${item.name}</h3>
+                                ${item.theme ? `<p class="text-sm font-semibold text-primary mb-2">${item.theme}</p>` : ''}
+                                
+                                <div class="text-xs text-gray-500 flex items-start gap-1 mt-1">
+                                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <span>${geoText}</span>
                                 </div>
-                                <button id="heart-btn-${item.id}" onclick="toggleHeart(event, ${item.id})" class="p-2 rounded-full hover:bg-gray-100 transition-colors ${isSaved ? 'bg-red-50' : ''} flex-shrink-0">
-                                    <svg id="heart-icon-${item.id}" class="w-6 h-6 transition-all ${isSaved ? 'text-red-500' : 'text-gray-300'}" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                                </button>
                             </div>
-                            <div class="flex flex-wrap gap-2 mb-3">${badges}</div>
-                            <div class="mb-4 text-sm text-gray-600 leading-relaxed line-clamp-3">${item.criteria}</div>
+
+                            <div class="flex flex-wrap gap-2 mb-2">${badges}</div>
+                            
                             <div class="mt-auto"></div>
                         </div>
 
                         <div id="details-${item.id}" class="hidden bg-gray-50 border-t border-gray-100 p-5 pt-4 animation-fade-in">
-                            <div class="space-y-4 text-sm">
+                            <div class="space-y-5 text-sm">
+                                
+                                ${item.targetGroup ? `
+                                <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Target Group</p>
+                                    <p class="text-gray-800 font-medium">${item.targetGroup}</p>
+                                </div>` : ''}
+
+                                ${item.summary ? `
+                                <div>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">About</p>
+                                    <p class="text-gray-700 leading-relaxed whitespace-pre-line">${item.summary}</p>
+                                </div>` : ''}
+
+                                ${item.criteria ? `
+                                <div>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Eligibility Criteria</p>
+                                    <p class="text-gray-700 leading-relaxed">${item.criteria}</p>
+                                </div>` : ''}
+
+                                <div class="pt-2 mt-2 border-t border-gray-200"></div>
+
                                 <div>
                                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Phone</p>
                                     ${item.phone ? 
@@ -338,64 +315,138 @@
             });
         }
 
-        // --- UTILS & HELPERS ---
-        function getSafeApiUrl(url) { const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/); return m ? `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv` : null; }
-        function cleanSplit(v) { return v ? String(v).split(/[;,]+/).map(s=>s.trim()).filter(s=>s!=="") : []; }
-        function getValueByFuzzyKey(row, key) { if(!row)return ""; const k=Object.keys(row).find(k=>k.toLowerCase().replace(/[^a-z]/g,"")===key.toLowerCase().replace(/[^a-z]/g,"")); return k?row[k]:""; }
-        function getColorForType(t) { let h=0;for(let i=0;i<t.length;i++)h=t.charCodeAt(i)+((h<<5)-h); return tagColors[Math.abs(h)%tagColors.length]; }
-        function logError(m) { document.getElementById('debug-log').classList.remove('hidden'); document.getElementById('debug-log').innerHTML+=`<div>• ${m}</div>`; }
-        function countActiveFilters() { return (document.getElementById('filter-name').value.trim()?1:0) + document.querySelectorAll('.geo-checkbox:checked').length + document.querySelectorAll('.type-checkbox:checked').length; }
-
-        // --- UI TOGGLES ---
-        function initializeHeaderState() {
-            const isDesktop = window.innerWidth >= 768;
-            if (isDesktop) { document.getElementById('filter-status-text').textContent = "Tap to close filters"; document.getElementById('filter-chevron').classList.add('rotate-180'); }
-            else { document.getElementById('filter-status-text').textContent = "Tap to expand filters"; document.getElementById('filter-chevron').classList.remove('rotate-180'); }
-        }
-        function toggleFilters(){
-            const c=document.getElementById('filter-content'),i=document.getElementById('filter-chevron'),t=document.getElementById('filter-status-text');
-            if(c.classList.contains('hidden')){ c.classList.remove('hidden'); c.classList.add('block'); i.classList.add('rotate-180'); t.textContent="Tap to close filters"; }
-            else{ c.classList.add('hidden'); c.classList.remove('block','md:block'); i.classList.remove('rotate-180'); const a=countActiveFilters(); t.innerHTML=a>0?`<span class="text-primary font-bold">${a} active filter(s)</span> - Tap to expand`:"Tap to expand filters"; }
+        // --- UTILITIES & HELPERS ---
+        function getSafeApiUrl(url) { 
+            const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/); 
+            return m ? `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv` : null; 
         }
         
+        function cleanSplit(v) { 
+            return v ? String(v).split(/[;,]+/).map(s=>s.trim()).filter(s=>s!=="") : []; 
+        }
+        
+        function getValueByFuzzyKey(row, key) { 
+            if(!row) return ""; 
+            const k = Object.keys(row).find(k=>k.toLowerCase().replace(/[^a-z]/g,"") === key.toLowerCase().replace(/[^a-z]/g,"")); 
+            return k ? row[k] : ""; 
+        }
+        
+        function getColorForType(t) { 
+            let h=0; 
+            for(let i=0; i<t.length; i++) h = t.charCodeAt(i) + ((h<<5)-h); 
+            return tagColors[Math.abs(h)%tagColors.length]; 
+        }
+        
+        function logError(m) { 
+            document.getElementById('debug-log').classList.remove('hidden'); 
+            document.getElementById('debug-log').innerHTML += `<div>• ${m}</div>`; 
+        }
+        
+        // --- FILTERS & MOBILE UI LOGIC ---
+        function toggleMobileFilters(){ 
+            if(window.innerWidth >= 768) return; 
+            const c = document.getElementById('filter-content');
+            const i = document.getElementById('filter-chevron'); 
+            c.classList.toggle('hidden'); 
+            i.classList.toggle('rotate-180'); 
+        }
+        
+        function collapseMobileFilters(){ 
+            if(window.innerWidth < 768){ 
+                document.getElementById('filter-content').classList.add('hidden'); 
+                document.getElementById('filter-chevron').classList.remove('rotate-180'); 
+            } 
+        }
+        
+        // Generic function to populate checkbox menus
         function populateFilters(){
-            const fill=(s,id,cls,upd)=>{const m=document.getElementById(id);m.innerHTML=''; if(s.size===0)m.innerHTML='<div class="p-2 text-gray-400">Empty</div>'; else Array.from(s).sort().forEach(v=>{const l=document.createElement('label');l.className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg";l.innerHTML=`<input type="checkbox" value="${v}" class="${cls} w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"><span class="ml-2 text-gray-700 text-sm">${v}</span>`;l.querySelector('input').addEventListener('change',()=>{upd();applyFilters();});m.appendChild(l);});};
-            fill(allGeographies,'geo-dropdown-menu','geo-checkbox',updateGeoLabel); fill(allSupportTypes,'type-dropdown-menu','type-checkbox',updateTypeLabel);
+            const fill = (set, id, cls, upd) => {
+                const m = document.getElementById(id);
+                m.innerHTML = ''; 
+                if(set.size === 0) {
+                    m.innerHTML = '<div class="p-2 text-gray-400">Empty</div>'; 
+                } else {
+                    Array.from(set).sort().forEach(v => {
+                        const l = document.createElement('label');
+                        l.className = "flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg";
+                        l.innerHTML = `<input type="checkbox" value="${v}" class="${cls} w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"><span class="ml-2 text-gray-700 text-sm">${v}</span>`;
+                        l.querySelector('input').addEventListener('change', () => { upd(); applyFilters(); });
+                        m.appendChild(l);
+                    });
+                }
+            };
+            fill(allGeographies, 'geo-dropdown-menu', 'geo-checkbox', updateGeoLabel); 
+            fill(allSupportTypes, 'type-dropdown-menu', 'type-checkbox', updateTypeLabel);
         }
-        function toggleGeoDropdown(e){e.stopPropagation(); document.getElementById('type-dropdown-menu').classList.add('hidden'); document.getElementById('geo-dropdown-menu').classList.toggle('hidden');}
-        function toggleTypeDropdown(e){e.stopPropagation(); document.getElementById('geo-dropdown-menu').classList.add('hidden'); document.getElementById('type-dropdown-menu').classList.toggle('hidden');}
-        document.addEventListener('click',(e)=>{ if(!document.getElementById('geo-dropdown-container').contains(e.target))document.getElementById('geo-dropdown-menu').classList.add('hidden'); if(!document.getElementById('type-dropdown-container').contains(e.target))document.getElementById('type-dropdown-menu').classList.add('hidden'); });
-        function updateGeoLabel(){const c=document.querySelectorAll('.geo-checkbox:checked').length; document.getElementById('geo-selected-text').textContent=c?`${c} Selected`:"All Geographies"; document.getElementById('geo-selected-text').className=c?"truncate text-gray-800 font-medium":"truncate text-gray-500";}
-        function updateTypeLabel(){const c=document.querySelectorAll('.type-checkbox:checked').length; document.getElementById('type-selected-text').textContent=c?`${c} Selected`:"All Support Types"; document.getElementById('type-selected-text').className=c?"truncate text-gray-800 font-medium":"truncate text-gray-500";}
 
+        // Toggle dropdown visibility
+        function toggleGeoDropdown(e){
+            e.stopPropagation(); 
+            document.getElementById('type-dropdown-menu').classList.add('hidden'); 
+            document.getElementById('geo-dropdown-menu').classList.toggle('hidden');
+        }
+        
+        function toggleTypeDropdown(e){
+            e.stopPropagation(); 
+            document.getElementById('geo-dropdown-menu').classList.add('hidden'); 
+            document.getElementById('type-dropdown-menu').classList.toggle('hidden');
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => { 
+            if(!document.getElementById('geo-dropdown-container').contains(e.target)) 
+                document.getElementById('geo-dropdown-menu').classList.add('hidden'); 
+            if(!document.getElementById('type-dropdown-container').contains(e.target)) 
+                document.getElementById('type-dropdown-menu').classList.add('hidden'); 
+        });
+
+        // Update Button Labels based on selection
+        function updateGeoLabel(){
+            const c = document.querySelectorAll('.geo-checkbox:checked').length; 
+            const el = document.getElementById('geo-selected-text');
+            el.textContent = c ? `${c} Selected` : "All Geographies"; 
+            el.className = c ? "truncate text-gray-800 font-medium" : "truncate text-gray-500";
+        }
+        
+        function updateTypeLabel(){
+            const c = document.querySelectorAll('.type-checkbox:checked').length; 
+            const el = document.getElementById('type-selected-text');
+            el.textContent = c ? `${c} Selected` : "All Support Types"; 
+            el.className = c ? "truncate text-gray-800 font-medium" : "truncate text-gray-500";
+        }
+
+        // --- FILTERING LOGIC ---
         function applyFilters(){
-            const s=document.getElementById('filter-name').value.toLowerCase().trim(), g=Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(c=>c.value), t=Array.from(document.querySelectorAll('.type-checkbox:checked')).map(c=>c.value);
-            const a=(s?1:0)+(g.length?1:0)+(t.length?1:0); 
-            // Update header text if closed
-            const c=document.getElementById('filter-content');
-            if(c.classList.contains('hidden')) document.getElementById('filter-status-text').innerHTML=a?`<span class="text-primary font-bold">${a} active filter(s)</span> - Tap to expand`:"Tap to expand filters";
-
-            renderServices(allServices.filter(i=>{
-                if(showFavoritesOnly && !savedIds.has(i.id)) return false;
-                const mS=!s||i.name.toLowerCase().includes(s)||i.criteria.toLowerCase().includes(s); 
-                const mG=!g.length||i.geography.some(v=>g.includes(v)); 
-                const mT=!t.length||i.supportType.some(v=>t.includes(v)); 
-                return mS&&mG&&mT;
-            }));
-        }
-        function clearFilters(){
-            document.getElementById('filter-name').value=''; document.querySelectorAll('input[type="checkbox"]').forEach(c=>c.checked=false);
-            showFavoritesOnly = false;
-            // Reset fav button style
-            const btn = document.getElementById('btn-favorites');
-            btn.classList.remove('bg-red-50', 'border-red-200');
-            btn.querySelector('svg').classList.remove('text-red-500', 'fill-current');
-            document.getElementById('fav-btn-text').textContent = "View Favorites";
+            const s = document.getElementById('filter-name').value.toLowerCase().trim();
+            const g = Array.from(document.querySelectorAll('.geo-checkbox:checked')).map(c => c.value);
+            const t = Array.from(document.querySelectorAll('.type-checkbox:checked')).map(c => c.value);
             
-            updateGeoLabel(); updateTypeLabel(); applyFilters();
+            // Update Mobile Status Text
+            const a = (s?1:0) + (g.length?1:0) + (t.length?1:0); 
+            document.getElementById('filter-status-text').innerHTML = a ? 
+                `<span class="text-primary font-bold">${a} active filter(s)</span> - Tap to edit` : 
+                "Tap to expand filters";
+
+            // Filter the list
+            const filtered = allServices.filter(i => {
+                const mS = !s || i.name.toLowerCase().includes(s) || i.criteria.toLowerCase().includes(s) || i.summary.toLowerCase().includes(s); 
+                const mG = !g.length || i.geography.some(v => g.includes(v)); 
+                const mT = !t.length || i.supportType.some(v => t.includes(v)); 
+                return mS && mG && mT;
+            });
+            renderServices(filtered);
         }
 
-        document.addEventListener('DOMContentLoaded',init); document.getElementById('filter-name').addEventListener('input',applyFilters);
+        function clearFilters(){
+            document.getElementById('filter-name').value = ''; 
+            document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false); 
+            updateGeoLabel(); 
+            updateTypeLabel(); 
+            applyFilters();
+        }
+
+        document.addEventListener('DOMContentLoaded', init); 
+        document.getElementById('filter-name').addEventListener('input', applyFilters);
     </script>
 </body>
 </html>
